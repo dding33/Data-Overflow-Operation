@@ -1,23 +1,30 @@
 ---
 title: "Report title"
-subtitle: "Subtitle"
 author: "Report prepared for Black Saber Software by Eminence Analytics"
-date: 2021-04-21
-lang: "en"
+date: '2021-04-21'
 output:
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    df_print: paged
   pdf_document:
     template: report.tex
-    toc: true
+    toc: yes
     toc_depth: 2
-titlepage: true
-titlepage-color: "6C3082"
-titlepage-text-color: "FFFFFF"
-titlepage-rule-color: "FFFFFF"
+lang: en
+subtitle: Subtitle
+titlepage: yes
+titlepage-color: 6C3082
+titlepage-text-color: FFFFFF
+titlepage-rule-color: FFFFFF
 titlepage-rule-height: 2
 ---
 
 ```{r, message = FALSE, echo=FALSE}
+#install.packages("gridExtra")
+#install.packages("tidyverse")
 library(tidyverse)
+library(cowplot)
 # this should supress all code and messages
 knitr::opts_chunk$set(include=FALSE)
 ```
@@ -73,7 +80,7 @@ my_plot <- black_saber_current_employees %>%
   ggplot(aes(x = productivity)) +
   geom_histogram(colour = "grey", fill = "#6C3082") +
   theme_minimal() +
-  labs(title = "Look! A title. But do you want a title or a caption for your report?", x = "This is a changed x label")
+  labs(title = "Look! A title. But do you want a title or a caption for your report?", x = "Productivity")
 
 # save your plot in your images folder, you can specify the height and width, too
 # saving this means you can add the image to your exectuve summary without having to run or rerun the code, if you wish
@@ -91,6 +98,93 @@ ggsave("images/example.png", width = 7, height = 4)
 library(tidyverse)
 library(lme4)
 ```
+
+
+## Import Data
+```{r}
+black_saber_current_employees <- read_csv("data/black-saber-current-employees.csv")
+final_hires <- read_csv("data/final-hires-newgrad_2020.csv")
+phase1_new_applicants <- read_csv("data/phase1-new-grad-applicants-2020.csv")
+phase2_new_applicants <- read_csv("data/phase2-new-grad-applicants-2020.csv")
+phase3_new_applicants <- read_csv("data/phase3-new-grad-applicants-2020.csv")
+```
+
+employee_id, gender, team, financial_q, role_seniority, leadership_for_level, productivity, salary
+```{r}
+black_saber_current_employees
+```
+applicant_id (final_hires)
+```{r}
+final_hires
+```
+applicant_id, team_applied_for, cover_letter, cv, gpa, gender, extracurriculars, work_experience
+```{r}
+phase1_new_applicants
+```
+
+applicant_id, technical_skills, writing_skills, speaking_skills, leadership_presence
+```{r}
+phase2_new_applicants
+```
+
+applicant_id, interviewer_rating_1, interviewer_rating_2
+```{r}
+phase3_new_applicants
+```
+
+## Data Cleaning
+
+Current Employee
+```{r}
+black_saber_current_employees$salary <- as.numeric(gsub('[$,]','',black_saber_current_employees$salary))
+```
+
+Applicants
+```{r}
+final_hires <- final_hires %>% mutate(final_hired = 1)
+# If the applicant is hired, final_hired = 1, otherwise final_hired = NA.
+phase1_new_applicants <- phase1_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE)
+phase2_new_applicants <- phase2_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE)
+phase3_new_applicants <- phase3_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE)
+```
+
+## Data Visualization
+
+
+### Salary distribution for man and woman in each quarter
+
+```{r}
+salary_by_gender_q1 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
+salary_by_gender_q2 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
+salary_by_gender_q3 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
+salary_by_gender_q4 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
+plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
+```
+```{r}
+phase2_new_applicants
+```
+
+### GPA vs. if hired
+```{r}
+phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()
+```
+```{r}
+#phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_point()
+```
+
+### Speaking skills VS if hired
+```{r}
+phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking_skills)) + geom_boxplot()
+```
+### Writing Skills VS if hired
+```{r}
+phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()
+```
+### Tech Skills VS if hired
+```{r}
+phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()
+```
+
 
 ## Discussion
 
