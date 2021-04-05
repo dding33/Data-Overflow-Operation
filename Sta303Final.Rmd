@@ -151,6 +151,19 @@ phase3_new_applicants <- phase3_new_applicants %>% merge(final_hires, by = "appl
 ## Data Visualization
 
 
+Part 1 on current employee data 
+findings: 
+1. fixing quarter, men on avg earn more
+2. lower leadership associated with lower productivity and lower salary
+3. leadership exceeding expectation does not lead to higher salary
+4. productivity follows pyramid shape with role seniorities
+5. higher/more senior roles, higher salary 
+6. for the same productivity, men on avg earn more
+7. fixing quarter, across diff levels (entry to manager) men are always the ones receiving highest salary within their team 
+8. for leadership, almost all "exceed expecation" are men and all "needs improvement" are women
+9. for the same role, men earn more 
+10. for the same team, men earn more 
+
 ### Salary distribution for man and woman in each quarter
 
 ```{r}
@@ -163,10 +176,98 @@ ggsave("images/gender_salary.png", gender_salary)
 ```
 
 ![](images/gender_salary.png)
+### salary difference across leadership, seniority, and gender for level, fixing productivity
+
+```{r, message=FALSE}
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q1') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = productivity, y = salary, color = as.factor(leadership_for_level)))+
+  geom_point()
+ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
+
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q1') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = productivity, y = salary, color = as.factor(role_seniority)))+
+  geom_point()
+ggsave("images/level_salary_Q1.png", width = 7, height = 4)
+
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q1') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = productivity, y = salary, color = as.factor(gender)))+
+  geom_point()
+ggsave("images/level_salary_Q1.png", width = 7, height = 4)
+```
+
+### salary difference in gender across teams, fixing quarter and seniority 
+```{r}
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q4') %>% 
+  filter(role_seniority == 'Entry-level') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()
+#ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
+
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q4') %>% 
+  filter(role_seniority == 'Junior I') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()
+
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q4') %>% 
+  filter(role_seniority == 'Senior I') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()
+
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q4') %>% 
+  filter(role_seniority == 'Manager') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()
+
+```
+```{r}
+black_saber_current_employees %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = leadership_for_level, y = salary, color = as.factor(gender)))+
+  geom_point()
+
+black_saber_current_employees %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = role_seniority, y = salary, color = as.factor(gender)))+
+  geom_point()
+
+black_saber_current_employees %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()
+```
+Part 2 on hiring data 
+findings: 
+1.men and women have similar GPA 
+2.applicants with higher GPA are hired
+3.applicants with better skills are hired
+4.largest difference in speaking skills, and least in minimal skills 
+  -may suggest bias towards non-native speakers 
+5.on average, female hires have lower skills than male hires 
+
 
 ```{r}
 phase2_new_applicants
 ```
+```{r}
+phase1_new_applicants %>% ggplot(aes(x = as.character(gender), y = gpa)) + geom_boxplot()
+#ggsave("images/gpa_hiring.png", gpa_if_hired)
+```
+
+
 
 ### GPA vs. if hired
 ```{r}
@@ -197,23 +298,37 @@ phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_
 phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()
 ```
 
-### salary differnce across seniority and leadership for level
 
-```{r, message=FALSE}
-black_saber_current_employees %>% 
-  filter(financial_q == '2020 Q1') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = productivity, y = salary, color = as.factor(leadership_for_level)))+
+```{r}
+phase1_new_applicants %>% 
+  filter(final_hired == '1') %>% 
+  group_by(applicant_id) %>% 
+  ggplot(aes(x = gender, y = gpa))+
   geom_point()
-ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
 
-black_saber_current_employees %>% 
-  filter(financial_q == '2020 Q1') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = productivity, y = salary, color = as.factor(role_seniority)))+
+phase2_new_applicants %>% 
+  filter(final_hired == '1') %>% 
+  group_by(applicant_id) %>% 
+  ggplot(aes(x = gender, y = technical_skills))+
   geom_point()
-ggsave("images/level_salary_Q1.png", width = 7, height = 4)
+
+phase2_new_applicants %>% 
+  filter(final_hired == '1') %>% 
+  group_by(applicant_id) %>% 
+  ggplot(aes(x = gender, y = writing_skills))+
+  geom_point()
+
+phase2_new_applicants %>% 
+  filter(final_hired == '1') %>% 
+  group_by(applicant_id) %>% 
+  ggplot(aes(x = gender, y = speaking_skills))+
+  geom_point()
+
 ```
+
+
+
+
 
 ![](images/leadership_salary_Q1.png) ![](images/level_salary_Q1.png)
 
