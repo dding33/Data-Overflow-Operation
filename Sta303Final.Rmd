@@ -3,14 +3,14 @@ title: "Report title"
 author: "Report prepared for Black Saber Software by Eminence Analytics"
 date: '2021-04-21'
 output:
-  html_document:
-    toc: yes
-    toc_depth: '2'
-    df_print: paged
   pdf_document:
     template: report.tex
     toc: yes
     toc_depth: 2
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    df_print: paged
 lang: en
 subtitle: Subtitle
 titlepage: yes
@@ -26,7 +26,7 @@ titlepage-rule-height: 2
 library(tidyverse)
 library(cowplot)
 # this should supress all code and messages
-knitr::opts_chunk$set(include=FALSE)
+knitr::opts_chunk$set(include=FALSE,echo = TRUE)
 ```
 
 # General comments (you can delete this section)
@@ -158,16 +158,24 @@ salary_by_gender_q1 <- black_saber_current_employees %>% filter(substring(financ
 salary_by_gender_q2 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
 salary_by_gender_q3 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
 salary_by_gender_q4 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
-plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
+gender_salary <- plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
+ggsave("images/gender_salary.png", gender_salary)
 ```
+
+![](images/gender_salary.png)
+
 ```{r}
 phase2_new_applicants
 ```
 
 ### GPA vs. if hired
 ```{r}
-phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()
+gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()
+ggsave("images/gpa_hiring.png", gpa_if_hired)
 ```
+
+![](images/gpa_hiring.png)
+
 ```{r}
 #phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_point()
 ```
@@ -175,7 +183,11 @@ phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + 
 ### Speaking skills VS if hired
 ```{r}
 phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking_skills)) + geom_boxplot()
+ggsave("images/speaking_hiring.png")
 ```
+
+![](images/speaking_hiring.png)
+
 ### Writing Skills VS if hired
 ```{r}
 phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()
@@ -185,6 +197,25 @@ phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_
 phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()
 ```
 
+### salary differnce across seniority and leadership for level
+
+```{r, message=FALSE}
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q1') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = productivity, y = salary, color = as.factor(leadership_for_level)))+
+  geom_point()
+ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
+
+black_saber_current_employees %>% 
+  filter(financial_q == '2020 Q1') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = productivity, y = salary, color = as.factor(role_seniority)))+
+  geom_point()
+ggsave("images/level_salary_Q1.png", width = 7, height = 4)
+```
+
+![](images/leadership_salary_Q1.png) ![](images/level_salary_Q1.png)
 
 ## Discussion
 
