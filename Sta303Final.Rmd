@@ -164,9 +164,37 @@ findings:
 9. for the same role, men earn more 
 10. for the same team, men earn more 
 
-### Salary distribution for man and woman in each quarter
+#research question 
+-is there gender bias in current employee remuneration? 
+  -fixing team/productivity/quarter/role, men earn more 
+  -need improvement: all women, exceed expectation: all men
+-general info   
+  -lower leadership associated with lower productivity and lower salary
+  -leadership exceeding expectation does not lead to higher salary
+  -productivity follows pyramid shape with role seniorities
+  
+--model interest 
+  -y:salary x: gender, seniority, team, leadership, productivity, quarter, id 
+  -main interest: salary ~ gender
+  -fixed effect: gender, seniority, quarter 
+  -random effect: team, leadership, productivity 
+  -y: continuous, don't need generalized, -> linear mixed model? 
+  
+  -model breakdown 
+    -full model of salary~gender
+    -reduced model (eg. take out productivity)
+    -model comparison 
+    -use random effect vs. random slope 
+    
+    -other models 
+    -seniority ~ gender
+    -leadership ~ gender 
+  
+
+### Salary distribution for men and women in each quarter
 
 ```{r}
+#edit axis label (name)
 salary_by_gender_q1 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
 salary_by_gender_q2 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
 salary_by_gender_q3 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
@@ -249,6 +277,9 @@ black_saber_current_employees %>%
   ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
   geom_point()
 ```
+
+
+
 Part 2 on hiring data 
 findings: 
 1.men and women have similar GPA 
@@ -257,6 +288,30 @@ findings:
 4.largest difference in speaking skills, and least in minimal skills 
   -may suggest bias towards non-native speakers 
 5.on average, female hires have lower skills than male hires 
+
+#research question   
+  -is there gender bias in the hiring process 
+  -model: 
+  #create phase 2 and phase 3 hired by merging 
+    -phase2_hired ~ gender* cv gpa cover_letter (phase1)
+    -phase3_hired ~ gender* cv gpa cover_letter tech writing speaking (phase2)
+    -final_hired ~ gender* cv gpa cover_letter tech writing speaking rating1 rating2 (phase3)
+    -y 0 or 1, not continous 
+      -not linear reg or linear mixed 
+      -need generalized linear model 
+    -all fixed effect 
+    
+    -reduced model
+    -final_hired ~ gender gpa tech writing speaking 
+    -model comparison 
+    
+    -model 
+    -gpa ~ gender 
+    -skills ~ gender
+  
+  -is there race bias in the hiring process
+    -phase3_hired ~ speaking* gender cv gpa cover_letter tech writing  (phase2)
+    -final_hired ~ speaking* gender cv gpa cover_letter tech writing rating1 rating2 (phase3)
 
 
 ```{r}
@@ -283,6 +338,7 @@ ggsave("images/gpa_hiring.png", gpa_if_hired)
 
 ### Speaking skills VS if hired
 ```{r}
+#same scale 
 phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking_skills)) + geom_boxplot()
 ggsave("images/speaking_hiring.png")
 ```
