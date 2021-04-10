@@ -23,6 +23,8 @@ titlepage-rule-height: 2
 ```{r, message = FALSE, echo=FALSE}
 #install.packages("gridExtra")
 #install.packages("tidyverse")
+#install.packages("lmtest")
+library(lmtest)
 library(tidyverse)
 library(cowplot)
 # this should supress all code and messages
@@ -141,12 +143,31 @@ black_saber_current_employees$salary <- as.numeric(gsub('[$,]','',black_saber_cu
 
 Applicants
 ```{r}
-final_hires <- final_hires %>% mutate(final_hired = 1)
 # If the applicant is hired, final_hired = 1, otherwise final_hired = NA.
-phase1_new_applicants <- phase1_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE)
-phase2_new_applicants <- phase2_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE)
-phase3_new_applicants <- phase3_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE)
+final_hires <- final_hires %>% mutate(final_hired = 1)
+
+# If the applicant passed phase1, pass_phase1 = 1, otherwise = NA.
+phase2_temp <- phase2_new_applicants %>% select(applicant_id, technical_skills) %>% rename(pass_phase1 = technical_skills) %>% mutate(pass_phase1 = 1)
+
+# If the applicant passed phase2, pass_phase2 = 1, otherwise = NA.
+phase3_temp <- phase3_new_applicants %>% select(applicant_id, interviewer_rating_1) %>% rename(pass_phase2 = interviewer_rating_1) %>% mutate(pass_phase2 = 1)
+
+phase1_new_applicants <- phase1_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE) %>% merge(phase2_temp, by = "applicant_id", all = TRUE) 
+
+phase1_new_applicants <- phase1_new_applicants %>% mutate(pass_phase1 = ifelse(is.na(pass_phase1), 0, 1)) %>% mutate(final_hired = ifelse(is.na(final_hired), 0, 1)) 
+
+phase2_new_applicants <- phase2_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE)%>% merge(phase3_temp, by = "applicant_id", all = TRUE)
+
+phase2_new_applicants <- phase2_new_applicants %>% mutate(pass_phase2 = ifelse(is.na(pass_phase2), 0, 1)) %>% mutate(final_hired = ifelse(is.na(final_hired), 0, 1)) 
+
+phase2_temp1 <- phase2_new_applicants %>% select(-final_hired, -pass_phase2)
+
+phase3_new_applicants <- phase3_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE) %>% inner_join(phase2_temp1, by = "applicant_id")
+
+phase3_new_applicants <- phase3_new_applicants %>% mutate(final_hired = ifelse(is.na(final_hired), 0, 1)) 
+
 ```
+
 
 ## Data Visualization
 
@@ -229,7 +250,9 @@ black_saber_current_employees %>%
 ggsave("images/level_salary_Q1.png", width = 7, height = 4)
 ```
 
+
 ### salary difference in gender across teams, fixing quarter and seniority 
+
 ```{r}
 black_saber_current_employees %>% 
   filter(financial_q == '2020 Q4') %>% 
@@ -278,6 +301,48 @@ black_saber_current_employees %>%
   geom_point()
 ```
 
+```{r}
+# The main model examine the gender bias, along with other potential biases in current employee remuneration
+# fixed effect: gender, seniority, quarter 
+# random effect: team, leadership, productivity 
+model1 <- lmer(salary ~ gender + role_seniority + financial_q + (1|team) + (1| leadership_for_level) + (1|productivity), data = black_saber_current_employees)
+summary(model1)
+```
+```{r}
+# The reduced model from the main model, took productivity out from random effect
+# fixed effect: gender, seniority, quarter 
+# random effect: team, leadership
+model2 <- lmer(salary ~ gender + role_seniority + financial_q + (1|team) + (1| leadership_for_level), data = black_saber_current_employees)
+summary(model2)
+# Likelihood ratio test comparing the two models, small p value indicating the second model is better
+lmtest::lrtest(model1, model2)
+```
+
+```{r}
+# The reduced model from the main model, took productivity and team out from random effect
+# fixed effect: gender, seniority, quarter 
+# random effect: leadership
+model3 <- lmer(salary ~ gender + role_seniority + financial_q + (1| leadership_for_level), data = black_saber_current_employees)
+#summary(model3)
+# Likelihood ratio test comparing the two models, small p value indicating the second model is better
+lmtest::lrtest(model2, model3)
+```
+
+```{r}
+# The reduced model from the main model, took productivity and leadership out from random effect
+# fixed effect: gender, seniority, quarter 
+# random effect: team
+model4 <- lmer(salary ~ gender + role_seniority + financial_q + (1| team), data = black_saber_current_employees)
+#summary(model3)
+# Likelihood ratio test comparing the two models, small p value indicating the second model is better
+lmtest::lrtest(model3, model4)
+```
+
+
+```{r}
+
+
+```
 
 
 Part 2 on hiring data 
@@ -330,6 +395,11 @@ gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hire
 ggsave("images/gpa_hiring.png", gpa_if_hired)
 ```
 
+```{r}
+gpa_if_pass_phase1 <- phase1_new_applicants %>% ggplot(aes(x = as.character(pass_phase1), y = gpa)) + geom_boxplot()
+ggsave("images/gpa_phase1.png", gpa_if_pass_phase1)
+```
+![](images/gpa_phase1.png)
 ![](images/gpa_hiring.png)
 
 ```{r}
@@ -343,12 +413,29 @@ phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking
 ggsave("images/speaking_hiring.png")
 ```
 
+```{r}
+#same scale 
+phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = speaking_skills)) + geom_boxplot()
+ggsave("images/speaking_phase2.png")
+```
+
+
 ![](images/speaking_hiring.png)
+![](images/speaking_phase2.png)
 
 ### Writing Skills VS if hired
 ```{r}
 phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()
+ggsave("images/writing_hired.png")
 ```
+![](images/writing_hired.png)
+```{r}
+phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = writing_skills)) + geom_boxplot()
+ggsave("images/writing_phase2.png")
+```
+![](images/writing_phase2.png)
+
+
 ### Tech Skills VS if hired
 ```{r}
 phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()
@@ -382,17 +469,42 @@ phase2_new_applicants %>%
 
 ```
 
-
-
-
-
 ![](images/leadership_salary_Q1.png) ![](images/level_salary_Q1.png)
+
+
+    
+```{r}
+# pass_phase1 ~ gender* cv gpa cover_letter (phase1)
+model2.1 <- glm(pass_phase1 ~ gender + gpa + extracurriculars + cv + work_experience, family = binomial(link = "logit"), data = phase1_new_applicants)
+summary(model2.1)
+```
+```{r}
+# pass_phase2 ~ gender* cv gpa cover_letter tech writing speaking (phase2)
+# everyone passed phase 1 has cv
+model2.2 <- glm(pass_phase2 ~ gender + team_applied_for + cover_letter + extracurriculars + work_experience + technical_skills + writing_skills + leadership_presence + speaking_skills, family = binomial(link = "logit"), data = phase2_new_applicants)
+summary(model2.2)
+```
+```{r}
+# final_hired ~ gender* cv gpa cover_letter tech writing speaking rating1 rating2 (phase3)
+# everyone passed phase 1 has cv
+# too few datapoints model can't converge... the only model that can converge is to use gender 
+phase3_new_applicants <- phase3_new_applicants %>% mutate(avg = (interviewer_rating_1+interviewer_rating_2)/2)
+model2.3 <- glm(final_hired ~ gender, family = binomial(link = "logit"), data = phase3_new_applicants)
+summary(model2.3)
+#table(phase3_new_applicants$gender, phase3_new_applicants$final_hired)
+table(phase3_new_applicants$avg)
+```
+
+
 
 ## Discussion
 
 _In this section you will summarize your findings across all the research questions and discuss the strengths and limitations of your work. It doesn't have to be long, but keep in mind that often people will just skim the intro and the discussion of a document like this, so make sure it is useful as a semi-standalone section (doesn't have to be completely standalone like the executive summary)._
 
 ### Strengths and limitations
+- Dataset size tooooo small!! especially the final hired data and the phase 3 data (22 observations)
+
+
 
 \newpage
 # Consultant information
