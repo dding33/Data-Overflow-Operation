@@ -1,6 +1,6 @@
 ---
-title: "Report title"
-author: "Report prepared for Black Saber Software by Eminence Analytics"
+title: "Bias Analysis in Human Resource System"
+author: "Report prepared for Black Saber Software by Data Over Flow"
 date: '2021-04-21'
 output:
   pdf_document:
@@ -14,250 +14,108 @@ output:
     df_print: paged
     toc: yes
     toc_depth: '2'
-subtitle: Subtitle
+subtitle: "-for Blacksaber Software in 2021"
 lang: en
 titlepage: yes
-titlepage-color: 6C3082
+titlepage-color: 027FFF
 titlepage-rule-color: FFFFFF
 titlepage-rule-height: 2
 titlepage-text-color: FFFFFF
 ---
 
-```{r, message = FALSE, echo=FALSE}
-#install.packages("gridExtra")
-#install.packages("tidyverse")
-#install.packages("lmtest")
+```{r setup, include = FALSE}
 library(lmtest)
 library(tidyverse)
 library(cowplot)
+library(lme4)
+library(ggpubr)
 # this should supress all code and messages
-knitr::opts_chunk$set(include=FALSE,echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 ```
 
-# General comments (you can delete this section)
-
-_You can delete this section, and if you want to check what it said, just open a template from the package again. You don't have to use this particular template, but you DO need to write you report in RMarkdown and include a cover page._
-
-_The cover page must have:_
-
-*	_A title and subtitle_
-* _"Report prepared for Black Saber Software by" your company name_
-*	_Date (assessment submission date is fine)_
-
-_You can change the colour of this cover to any colour you would like by replacing 6C3082 in the YAML above (line 11) to another hex code. You could use this tool to help you:_ https://htmlcolorcodes.com/color-picker/
+```{r}
+# Import cleaned data
+current <- read_csv("clean/current.csv")
+final_hires <- read_csv("clean/final-hires-newgrad_2020.csv")
+phase1_new_applicants <- read_csv("clean/phase1_new.csv")
+phase2_new_applicants <- read_csv("clean/phase2_new.csv")
+phase3_new_applicants <- read_csv("clean/phase3_new.csv")
+```
 
 \newpage
 # Executive summary
 
-_Guidelines for the executive summary:_
+We (Data Over Flow Co.Ltd.) have examined the structure of human resource system of the company (the Black Saber Software) by analyzing data on the company's hiring, promotion and salary process and found there to be no bias. 
 
-* _No more than two pages_
-* _Language is appropriate for a non-technical audience_
-* _Bullet points are used where appropriate_
-*	_A small number of key visualizations and/or tables are included_
-*	_All three research questions are addressed_
+In our opinion, the system is fair during each of the three process, in accordance with Ontario's Human Rights Code and Black Saber's policies. Specifically, neither hiring nor promition process shows sign of gender/racial discrimination; the individual salary level is fairly evaluated based non-personal and work-related parameters only.  
 
 
 \newpage
 # Technical report
-_This part of the report is much more comprehensive than the executive summary. The audience is statistics/data-minded people, but you should NOT include code or unformatted R output here._
-
 
 ## Introduction
 
-_Provide a brief introduction to your report and outline what the report will cover. This section is valuable for setting scope and expectations. _
 
 ### Research questions
-_Use bullet points to to describe the research questions you are going to address. Write in full sentences._
+
+*
+*
+*
+
+## Does there exist bias in current employee enumeration?
+
+_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
+
+## Does there exist bias in the hiring process?
+
+_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
 
 ## Informative title for section addressing a research question
 
 _For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
 
-```{r}
-# This chunk provides an example of some things you can do with RMarkdown to make your report creation process easier
-
-# read in the data
-black_saber_current_employees <- read_csv("data/black-saber-current-employees.csv")
-
-# create a visualisation
-my_plot <- black_saber_current_employees %>% 
-  ggplot(aes(x = productivity)) +
-  geom_histogram(colour = "grey", fill = "#6C3082") +
-  theme_minimal() +
-  labs(title = "Look! A title. But do you want a title or a caption for your report?", x = "Productivity")
-
-# save your plot in your images folder, you can specify the height and width, too
-# saving this means you can add the image to your exectuve summary without having to run or rerun the code, if you wish
-ggsave("images/example.png", width = 7, height = 4)
-
-# norice how the image is included with the ![](file/path.png) below
-```
-
-![](images/example.png)
-
-## Informative title for section addressing a research question
-## Informative title for section addressing a research question
-
-```{r, include = FALSE}
-library(tidyverse)
-library(lme4)
-```
-
-
-## Import Data
-```{r}
-black_saber_current_employees <- read_csv("data/black-saber-current-employees.csv")
-final_hires <- read_csv("data/final-hires-newgrad_2020.csv")
-phase1_new_applicants <- read_csv("data/phase1-new-grad-applicants-2020.csv")
-phase2_new_applicants <- read_csv("data/phase2-new-grad-applicants-2020.csv")
-phase3_new_applicants <- read_csv("data/phase3-new-grad-applicants-2020.csv")
-```
-
-employee_id, gender, team, financial_q, role_seniority, leadership_for_level, productivity, salary
-```{r}
-black_saber_current_employees
-```
-applicant_id (final_hires)
-```{r}
-final_hires
-```
-applicant_id, team_applied_for, cover_letter, cv, gpa, gender, extracurriculars, work_experience
-```{r}
-phase1_new_applicants
-```
-
-applicant_id, technical_skills, writing_skills, speaking_skills, leadership_presence
-```{r}
-phase2_new_applicants
-```
-
-applicant_id, interviewer_rating_1, interviewer_rating_2
-```{r}
-phase3_new_applicants
-```
-
-## Data Cleaning
-
-Current Employee
-```{r}
-black_saber_current_employees$salary <- as.numeric(gsub('[$,]','',black_saber_current_employees$salary))
-```
-
-Applicants
-```{r}
-# If the applicant is hired, final_hired = 1, otherwise final_hired = NA.
-final_hires <- final_hires %>% mutate(final_hired = 1)
-
-# If the applicant passed phase1, pass_phase1 = 1, otherwise = NA.
-phase2_temp <- phase2_new_applicants %>% select(applicant_id, technical_skills) %>% rename(pass_phase1 = technical_skills) %>% mutate(pass_phase1 = 1)
-
-# If the applicant passed phase2, pass_phase2 = 1, otherwise = NA.
-phase3_temp <- phase3_new_applicants %>% select(applicant_id, interviewer_rating_1) %>% rename(pass_phase2 = interviewer_rating_1) %>% mutate(pass_phase2 = 1)
-
-phase1_new_applicants <- phase1_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE) %>% merge(phase2_temp, by = "applicant_id", all = TRUE) 
-
-phase1_new_applicants <- phase1_new_applicants %>% mutate(pass_phase1 = ifelse(is.na(pass_phase1), 0, 1)) %>% mutate(final_hired = ifelse(is.na(final_hired), 0, 1)) 
-
-phase2_new_applicants <- phase2_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE)%>% merge(phase3_temp, by = "applicant_id", all = TRUE)
-
-phase2_new_applicants <- phase2_new_applicants %>% mutate(pass_phase2 = ifelse(is.na(pass_phase2), 0, 1)) %>% mutate(final_hired = ifelse(is.na(final_hired), 0, 1)) 
-
-phase2_temp1 <- phase2_new_applicants %>% select(-final_hired, -pass_phase2)
-
-phase3_new_applicants <- phase3_new_applicants %>% merge(final_hires, by = "applicant_id", all = TRUE) %>% inner_join(phase2_temp1, by = "applicant_id")
-
-phase3_new_applicants <- phase3_new_applicants %>% mutate(final_hired = ifelse(is.na(final_hired), 0, 1)) 
-
-```
-
-
 ## Data Visualization
 
-
-Part 1 on current employee data 
-findings: 
-1. fixing quarter, men on avg earn more
-2. lower leadership associated with lower productivity and lower salary
-3. leadership exceeding expectation does not lead to higher salary
-4. productivity follows pyramid shape with role seniorities
-5. higher/more senior roles, higher salary 
-6. for the same productivity, men on avg earn more
-7. fixing quarter, across diff levels (entry to manager) men are always the ones receiving highest salary within their team 
-8. for leadership, almost all "exceed expecation" are men and all "needs improvement" are women
-9. for the same role, men earn more 
-10. for the same team, men earn more 
-
-#research question 
--is there gender bias in current employee remuneration? 
-  -fixing team/productivity/quarter/role, men earn more 
-  -need improvement: all women, exceed expectation: all men
--general info   
-  -lower leadership associated with lower productivity and lower salary
-  -leadership exceeding expectation does not lead to higher salary
-  -productivity follows pyramid shape with role seniorities
-  
---model interest 
-  -y:salary x: gender, seniority, team, leadership, productivity, quarter, id 
-  -main interest: salary ~ gender
-  -fixed effect: gender, seniority, quarter 
-  -random effect: team, leadership, productivity 
-  -y: continuous, don't need generalized, -> linear mixed model? 
-  
-  -model breakdown 
-    -full model of salary~gender
-    -reduced model (eg. take out productivity)
-    -model comparison 
-    -use random effect vs. random slope 
-    
-    -other models 
-    -seniority ~ gender
-    -leadership ~ gender 
-  
-
-### Salary distribution for men and women in each quarter
-
-```{r}
+```{r gender salary, fig.cap="Salary Distribution for Men and Women in Each Quarter"}
 #edit axis label (name)
-salary_by_gender_q1 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
-salary_by_gender_q2 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
-salary_by_gender_q3 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
-salary_by_gender_q4 <- black_saber_current_employees %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))
+salary_by_gender_q1 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q2 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q3 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q4 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 gender_salary <- plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
-ggsave("images/gender_salary.png", gender_salary)
+gender_salary
 ```
 
-![](images/gender_salary.png)
-### salary difference across leadership, seniority, and gender for level, fixing productivity
-
-```{r, message=FALSE}
-black_saber_current_employees %>% 
+```{r fig1, fig.cap="salary difference across leadership, seniority, and gender for level, fixing productivity"}
+ldr_slry <- current %>% 
   filter(financial_q == '2020 Q1') %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = productivity, y = salary, color = as.factor(leadership_for_level)))+
-  geom_point()
-ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
+  geom_point()+
+  labs(color = "Leadership Score")
+```
 
-black_saber_current_employees %>% 
+```{r, message=FALSE, fig.cap="Salary Difference Across Leadership Levels"}
+lvl_slry <- current %>% 
   filter(financial_q == '2020 Q1') %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = productivity, y = salary, color = as.factor(role_seniority)))+
   geom_point()
-ggsave("images/level_salary_Q1.png", width = 7, height = 4)
+```
 
-black_saber_current_employees %>% 
+
+```{r, message=FALSE, fig.cap="Salary Difference Across Leadership Levels"}
+pro_slry <- current %>% 
   filter(financial_q == '2020 Q1') %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = productivity, y = salary, color = as.factor(gender)))+
   geom_point()
-ggsave("images/level_salary_Q1.png", width = 7, height = 4)
 ```
-
 
 ### salary difference in gender across teams, fixing quarter and seniority 
 
 ```{r}
-black_saber_current_employees %>% 
+current %>% 
   filter(financial_q == '2020 Q4') %>% 
   filter(role_seniority == 'Entry-level') %>% 
   group_by(employee_id) %>% 
@@ -265,21 +123,21 @@ black_saber_current_employees %>%
   geom_point()
 #ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
 
-black_saber_current_employees %>% 
+current %>% 
   filter(financial_q == '2020 Q4') %>% 
   filter(role_seniority == 'Junior I') %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
   geom_point()
 
-black_saber_current_employees %>% 
+current %>% 
   filter(financial_q == '2020 Q4') %>% 
   filter(role_seniority == 'Senior I') %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
   geom_point()
 
-black_saber_current_employees %>% 
+current %>% 
   filter(financial_q == '2020 Q4') %>% 
   filter(role_seniority == 'Manager') %>% 
   group_by(employee_id) %>% 
@@ -288,17 +146,17 @@ black_saber_current_employees %>%
 
 ```
 ```{r}
-black_saber_current_employees %>% 
+current %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = leadership_for_level, y = salary, color = as.factor(gender)))+
   geom_point()
 
-black_saber_current_employees %>% 
+current %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = role_seniority, y = salary, color = as.factor(gender)))+
   geom_point()
 
-black_saber_current_employees %>% 
+current %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
   geom_point()
@@ -308,14 +166,14 @@ black_saber_current_employees %>%
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
 # fixed effect: gender, seniority, quarter 
 # random effect: team, leadership, productivity 
-model1 <- lmer(salary ~ gender + role_seniority + financial_q + (1|team) + (1| leadership_for_level) + (1|productivity), data = black_saber_current_employees)
+model1 <- lmer(salary ~ gender + role_seniority + financial_q + (1|team) + (1| leadership_for_level) + (1|productivity), data = current)
 summary(model1)
 ```
 ```{r}
 # The reduced model from the main model, took productivity out from random effect
 # fixed effect: gender, seniority, quarter 
 # random effect: team, leadership
-model2 <- lmer(salary ~ gender + role_seniority + financial_q + (1|team) + (1| leadership_for_level), data = black_saber_current_employees)
+model2 <- lmer(salary ~ gender + role_seniority + financial_q + (1|team) + (1| leadership_for_level), data = current)
 summary(model2)
 # Likelihood ratio test comparing the two models, small p value indicating the second model is better
 lmtest::lrtest(model1, model2)
@@ -325,7 +183,7 @@ lmtest::lrtest(model1, model2)
 # The reduced model from the main model, took productivity and team out from random effect
 # fixed effect: gender, seniority, quarter 
 # random effect: leadership
-model3 <- lmer(salary ~ gender + role_seniority + financial_q + (1| leadership_for_level), data = black_saber_current_employees)
+model3 <- lmer(salary ~ gender + role_seniority + financial_q + (1| leadership_for_level), data = current)
 #summary(model3)
 # Likelihood ratio test comparing the two models, small p value indicating the second model is better
 lmtest::lrtest(model2, model3)
@@ -335,18 +193,11 @@ lmtest::lrtest(model2, model3)
 # The reduced model from the main model, took productivity and leadership out from random effect
 # fixed effect: gender, seniority, quarter 
 # random effect: team
-model4 <- lmer(salary ~ gender + role_seniority + financial_q + (1| team), data = black_saber_current_employees)
+model4 <- lmer(salary ~ gender + role_seniority + financial_q + (1| team), data = current)
 #summary(model3)
 # Likelihood ratio test comparing the two models, small p value indicating the second model is better
 lmtest::lrtest(model3, model4)
 ```
-
-
-```{r}
-
-
-```
-
 
 Part 2 on hiring data 
 findings: 
