@@ -29,11 +29,12 @@ library(tidyverse)
 library(cowplot)
 library(lme4)
 library(ggpubr)
+library(knitr)
 # this should supress all code and messages
 knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 ```
 
-```{r}
+```{r, warning=FALSE}
 # Import cleaned data
 current <- read_csv("clean/current.csv")
 final_hires <- read_csv("clean/final-hires-newgrad_2020.csv")
@@ -55,7 +56,6 @@ In our opinion, the system is fair during each of the three process, in accordan
 
 ## Introduction
 
-
 ### Research questions
 
 *
@@ -63,104 +63,6 @@ In our opinion, the system is fair during each of the three process, in accordan
 *
 
 ## Does there exist bias in current employee enumeration?
-
-_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
-
-## Does there exist bias in the hiring process?
-
-_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
-
-## Informative title for section addressing a research question
-
-_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
-
-## Data Visualization
-
-```{r gender salary, fig.cap="Salary Distribution for Men and Women in Each Quarter"}
-#edit axis label (name)
-salary_by_gender_q1 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q2 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q3 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q4 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-gender_salary <- plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
-gender_salary
-```
-
-```{r fig1, fig.cap="salary difference across leadership, seniority, and gender for level, fixing productivity"}
-ldr_slry <- current %>% 
-  filter(financial_q == '2020 Q1') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = productivity, y = salary, color = as.factor(leadership_for_level)))+
-  geom_point()+
-  labs(color = "Leadership Score")
-```
-
-```{r, message=FALSE, fig.cap="Salary Difference Across Leadership Levels"}
-lvl_slry <- current %>% 
-  filter(financial_q == '2020 Q1') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = productivity, y = salary, color = as.factor(role_seniority)))+
-  geom_point()
-```
-
-
-```{r, message=FALSE, fig.cap="Salary Difference Across Leadership Levels"}
-pro_slry <- current %>% 
-  filter(financial_q == '2020 Q1') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = productivity, y = salary, color = as.factor(gender)))+
-  geom_point()
-```
-
-### salary difference in gender across teams, fixing quarter and seniority 
-
-```{r}
-current %>% 
-  filter(financial_q == '2020 Q4') %>% 
-  filter(role_seniority == 'Entry-level') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()
-#ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
-
-current %>% 
-  filter(financial_q == '2020 Q4') %>% 
-  filter(role_seniority == 'Junior I') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()
-
-current %>% 
-  filter(financial_q == '2020 Q4') %>% 
-  filter(role_seniority == 'Senior I') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()
-
-current %>% 
-  filter(financial_q == '2020 Q4') %>% 
-  filter(role_seniority == 'Manager') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()
-
-```
-```{r}
-current %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = leadership_for_level, y = salary, color = as.factor(gender)))+
-  geom_point()
-
-current %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = role_seniority, y = salary, color = as.factor(gender)))+
-  geom_point()
-
-current %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()
-```
 
 ```{r}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
@@ -199,134 +101,10 @@ model4 <- lmer(salary ~ gender + role_seniority + financial_q + (1| team), data 
 lmtest::lrtest(model3, model4)
 ```
 
-Part 2 on hiring data 
-findings: 
-1.men and women have similar GPA 
-2.applicants with higher GPA are hired
-3.applicants with better skills are hired
-4.largest difference in speaking skills, and least in minimal skills 
-  -may suggest bias towards non-native speakers 
-5.on average, female hires have lower skills than male hires 
+_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
 
-#research question   
-  -is there gender bias in the hiring process 
-  -model: 
-  #create phase 2 and phase 3 hired by merging 
-    -phase2_hired ~ gender* cv gpa cover_letter (phase1)
-    -phase3_hired ~ gender* cv gpa cover_letter tech writing speaking (phase2)
-    -final_hired ~ gender* cv gpa cover_letter tech writing speaking rating1 rating2 (phase3)
-    -y 0 or 1, not continous 
-      -not linear reg or linear mixed 
-      -need generalized linear model 
-    -all fixed effect 
-    
-    -reduced model
-    -final_hired ~ gender gpa tech writing speaking 
-    -model comparison 
-    
-    -model 
-    -gpa ~ gender 
-    -skills ~ gender
-  
-  -is there race bias in the hiring process
-    -phase3_hired ~ speaking* gender cv gpa cover_letter tech writing  (phase2)
-    -final_hired ~ speaking* gender cv gpa cover_letter tech writing rating1 rating2 (phase3)
+## Does there exist bias in the hiring process?
 
-
-```{r}
-phase2_new_applicants
-```
-```{r}
-phase1_new_applicants %>% ggplot(aes(x = as.character(gender), y = gpa)) + geom_boxplot()
-#ggsave("images/gpa_hiring.png", gpa_if_hired)
-```
-
-
-
-### GPA vs. if hired
-```{r}
-gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()
-ggsave("images/gpa_hiring.png", gpa_if_hired)
-```
-
-```{r}
-gpa_if_pass_phase1 <- phase1_new_applicants %>% ggplot(aes(x = as.character(pass_phase1), y = gpa)) + geom_boxplot()
-ggsave("images/gpa_phase1.png", gpa_if_pass_phase1)
-```
-![](images/gpa_phase1.png)
-![](images/gpa_hiring.png)
-
-```{r}
-#phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_point()
-```
-
-### Speaking skills VS if hired
-```{r}
-#same scale 
-phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking_skills)) + geom_boxplot()
-ggsave("images/speaking_hiring.png")
-```
-
-```{r}
-#same scale 
-phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = speaking_skills)) + geom_boxplot()
-ggsave("images/speaking_phase2.png")
-```
-
-
-![](images/speaking_hiring.png)
-![](images/speaking_phase2.png)
-
-### Writing Skills VS if hired
-```{r}
-phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()
-ggsave("images/writing_hired.png")
-```
-![](images/writing_hired.png)
-```{r}
-phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = writing_skills)) + geom_boxplot()
-ggsave("images/writing_phase2.png")
-```
-![](images/writing_phase2.png)
-
-
-### Tech Skills VS if hired
-```{r}
-phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()
-```
-
-
-```{r}
-phase1_new_applicants %>% 
-  filter(final_hired == '1') %>% 
-  group_by(applicant_id) %>% 
-  ggplot(aes(x = gender, y = gpa))+
-  geom_point()
-
-phase2_new_applicants %>% 
-  filter(final_hired == '1') %>% 
-  group_by(applicant_id) %>% 
-  ggplot(aes(x = gender, y = technical_skills))+
-  geom_point()
-
-phase2_new_applicants %>% 
-  filter(final_hired == '1') %>% 
-  group_by(applicant_id) %>% 
-  ggplot(aes(x = gender, y = writing_skills))+
-  geom_point()
-
-phase2_new_applicants %>% 
-  filter(final_hired == '1') %>% 
-  group_by(applicant_id) %>% 
-  ggplot(aes(x = gender, y = speaking_skills))+
-  geom_point()
-
-```
-
-![](images/leadership_salary_Q1.png) ![](images/level_salary_Q1.png)
-
-
-    
 ```{r}
 # pass_phase1 ~ gender* cv gpa cover_letter (phase1)
 model2.1 <- glm(pass_phase1 ~ gender + gpa + extracurriculars + cv + work_experience, family = binomial(link = "logit"), data = phase1_new_applicants)
@@ -347,6 +125,212 @@ model2.3 <- glm(final_hired ~ gender, family = binomial(link = "logit"), data = 
 summary(model2.3)
 #table(phase3_new_applicants$gender, phase3_new_applicants$final_hired)
 table(phase3_new_applicants$avg)
+```
+
+_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
+
+## Informative title for section addressing a research question
+
+_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
+
+## Data Visualization
+
+```{r gender salary, fig.cap="Salary Distribution for Men and Women in Each Quarter", fig.align='center', fig.height=7}
+#edit axis label (name)
+salary_by_gender_q1 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q2 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q3 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q4 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+gender_salary <- plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
+gender_salary
+```
+
+```{r fig1, fig.cap="Salary Difference Across Leadership for Level Fixing Productivity", fig.align='center'}
+ldr_slry <- current %>% 
+  filter(financial_q == '2020 Q1') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = productivity, y = salary, color = as.factor(leadership_for_level)))+
+  geom_point()+
+  labs(color = "Leadership for Level")
+ldr_slry
+```
+
+```{r, message=FALSE, fig.cap="Salary Difference Across Role Seniority", fig.align='center'}
+lvl_slry <- current %>% 
+  filter(financial_q == '2020 Q1') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = productivity, y = salary, color = as.factor(role_seniority)))+
+  geom_point()+
+    labs(color = "Seniority")
+lvl_slry
+```
+
+```{r, message=FALSE, fig.cap="Salary Difference Across Leadership Levels"}
+pro_slry <- current %>% 
+  filter(financial_q == '2020 Q1') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = productivity, y = salary, color = as.factor(gender)))+
+  geom_point()+
+  labs(color = "gender")
+pro_slry
+```
+
+
+```{r, fig.cap="Salary Difference in Gender Across Teams, Fixing Quater and Seniority(Entry Level)"}
+current %>% 
+  filter(financial_q == '2020 Q4') %>% 
+  filter(role_seniority == 'Entry-level') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
+  labs(color = "gender")
+#ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
+```
+
+
+```{r, fig.cap="Salary Difference in Gender Across Teams, Fixing Quater and Seniority(Junior I)"}
+current %>% 
+  filter(financial_q == '2020 Q4') %>% 
+  filter(role_seniority == 'Junior I') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
+  labs(color = "gender")
+```
+
+
+```{r, fig.cap="Salary Difference in Gender Across Teams, Fixing Quater and Seniority(Junior II)"}
+current %>% 
+  filter(financial_q == '2020 Q4') %>% 
+  filter(role_seniority == 'Senior I') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
+  labs(color = "gender")
+```
+
+
+```{r, fig.cap="Salary Difference in Gender Across Teams, Fixing Quater and Seniority(Manager)"}
+current %>% 
+  filter(financial_q == '2020 Q4') %>% 
+  filter(role_seniority == 'Manager') %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
+  labs(color = "gender")
+```
+
+```{r, fig.cap="Salary Difference in Gender Across Leadership for Level"}
+current %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = leadership_for_level, y = salary, color = as.factor(gender)))+
+  geom_point()+
+  labs(color = "gender")+
+  xlab("leadership for level")+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
+  labs(color = "gender")
+```
+
+
+```{r, fig.cap="Salary Difference in Gender Across Seniority"}
+current %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = role_seniority, y = salary, color = as.factor(gender)))+
+  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
+  labs(color = "gender")+
+  xlab("seniority")
+```
+
+```{r, fig.cap="Salary Difference in Gender Across Teams"}
+current %>% 
+  group_by(employee_id) %>% 
+  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
+  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
+  labs(color = "gender")
+```
+
+```{r, fig.cap="GPA Distribution Across Phase1 Applicants"}
+phase1_new_applicants %>% ggplot(aes(x = as.character(gender), y = gpa)) + geom_boxplot()+
+  xlab("gender")
+#ggsave("images/gpa_hiring.png", gpa_if_hired)
+```
+
+
+```{r, fig.cap="GPA Distribtion Across Hiring Results"}
+gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()+
+  xlab("hiring results")
+gpa_if_hired
+```
+
+```{r, fig.cap="GPA Distribution Across Phase1 Results"}
+gpa_if_pass_phase1 <- phase1_new_applicants %>% ggplot(aes(x = as.character(pass_phase1), y = gpa)) + geom_boxplot()+
+  xlab("phase1 results")
+gpa_if_pass_phase1
+```
+
+```{r, fig.cap="Speaking Skills Score Across Hiring Results"}
+#same scale 
+phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking_skills)) + geom_boxplot()+
+  xlab("hiring results")+ylab("speaking skills score")
+```
+
+```{r, fig.cap="Speaking Skills Score Across Phase2 Results"}
+#same scale 
+phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = speaking_skills)) + geom_boxplot()+
+  xlab("phase2 results")+ylab("speaking skills score")
+```
+
+### Writing Skills VS if hired
+```{r, fig.cap="Writing Skills Score Across Hiring Results"}
+phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()+
+  xlab("hiring results")+ylab("writing skills score")
+```
+![](images/writing_hired.png)
+```{r, fig.cap="Writing Skills Score Across Phase2 Results"}
+phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = writing_skills)) + geom_boxplot()+
+  xlab("phase2 results")+ylab("writing skills score")
+```
+
+
+```{r, fig.cap="Technical Skills Score Across Hiring Results"}
+phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()+
+  xlab("hiring results")+ylab("technical skills score")
+```
+
+
+```{r}
+phase1_new_applicants %>% 
+  filter(final_hired == '1') %>% 
+  group_by(applicant_id) %>% 
+  ggplot(aes(x = gender, y = gpa))+
+  geom_point()
+```
+
+
+```{r}
+phase2_new_applicants %>% 
+  filter(final_hired == '1') %>% 
+  group_by(applicant_id) %>% 
+  ggplot(aes(x = gender, y = technical_skills))+
+  geom_point()
+```
+
+
+```{r}
+phase2_new_applicants %>% 
+  filter(final_hired == '1') %>% 
+  group_by(applicant_id) %>% 
+  ggplot(aes(x = gender, y = writing_skills))+
+  geom_point()
+```
+
+
+```{r}
+phase2_new_applicants %>% 
+  filter(final_hired == '1') %>% 
+  group_by(applicant_id) %>% 
+  ggplot(aes(x = gender, y = speaking_skills))+
+  geom_point()
+
 ```
 
 
