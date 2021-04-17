@@ -32,6 +32,7 @@ library(ggpubr)
 library(knitr)
 library(tableone)
 library(broom)
+library(psycho)
 
 #install.packages("tableone")
 
@@ -54,6 +55,12 @@ phase3_new_applicants <- read_csv("clean/phase3_new.csv")
 
 We (Data Over Flow Co.Ltd.) have examined the structure of human resource system of the company (the Black Saber Software) by analyzing data on the company's hiring, promotion and salary process and found there to be no bias. 
 
+The key findings are:
+
+- Even though there exists difference between salaries of male and female employees, the difference is not the evidence of bias because productivity acts as a confounder variable between gender and salary;
+- Among the 3 phases of recruitments, the chance of success is dependent on different variables such as gpa and work experience, gender is not a significant predicting variable for the chance of success at any of these phases;
+- The chances of being promoted is higher for male employees than for female employees, however (...)
+
 In our opinion, the system is fair during each of the three process, in accordance with Ontario's Human Rights Code and Black Saber's policies. Specifically, neither hiring nor promotion process shows sign of gender/racial discrimination; the individual salary level is fairly evaluated based non-personal and work-related parameters only.  
 
 
@@ -62,15 +69,63 @@ In our opinion, the system is fair during each of the three process, in accordan
 
 ## Introduction
 
+We use a combination of model buliding and data visualization to prove our conclusion that there is no bias on personal traits in the company's hiring and enumeration processes. In the following report, 'the company' refers to the BlackSaber Software and 'we' refers to the analysts from Data Over Flow. With no special notes, the assumed level of significance in this report is $\alpha=0.05$.
+
 ### Research questions
 
-*
-*
-*
+* Salary
+* Hiring
+* Promotion
 
 ## Does there exist bias in current employee enumeration?
 
-```{r}
+In order to analyze the existence of bias in the current employee enumeration, we fitted a linear mixed model as well as two general linear model on the dataset containing all current employees at the BlackSaber Software. The dataset contains 6909 observations of 9 variables, including all 608 employees of the BlackSaber Software. Each observation records the information of a specific employee at a specific timespot. Based on data visualization, the difference inbetween different level of juniors and seniors are not significant, thus we combine 'Entry-level', 'Junior I', 'Junior II' and 'Junior III' into 'Junior' and combine 'senior I', 'senior II', 'senior III' into 'senior'. 
+
+We consider salary as the key of measuing employee enumaration and  use it as our response varible. We want to asses whether an employee's salary is affects by his/hers gender in order to detect the existence of bias. On top of that, we include other non-personal variables such as team information, financial quater of the year and seniority of level which are ket factors of salary level given common senses. To incorporate both the fixed effetcs and the random effects of variables on the employee enumaration, we choose to use the linear mixed model:
+
+\begin{equation}
+y = X\beta + Zu + \epsilon 
+\end{equation}
+
+Linear mixed model considers the response variable y as a vector of observations with $E(y)=X\beta$. $\beta$ is an unknown vector for the fixes effects and u is an unknown vector for the random effetcs. In our initial model, we consider gender, seniority and the financial quarter as fixed effects; we treat team, leadership for level and productivity score as random effects. This allows the model to account for both the variability within random effect groups as well as between those group, which is crucial in our case because the data covers information across various time intervals. 
+
+Due to the high correlation between random effect variables, we performed likelihood ratio tests on various reduced models and dropped the leadership for level as a predictor. The final model gives the following results:
+
+\begin{center}
+\captionof{table}{Statistics Summary for Reduced Salary Model}
+\begin{tabular}{|l|l|l|l|}
+\hline
+Variable & $\hat{\beta}$ & Std. Error & p-value \\ \hline
+intercept & 116904.03 & 709.18 & 0.99 \\ \hline
+women & -2928.38 & 426.88 & $6.06e^{-9}$ \\ \hline
+junior & -79703.19 & 342.56 & $8.91e^{-7}$ \\ \hline
+manager & -50342.84 & 311.51 & $0.00$ \\ \hline
+senior & -69910.72 & 323.8 & $0.01$ \\ \hline
+vice-president & 30024.17 & 498.25 & $1.25e^{-12}$ \\ \hline
+quarter & 74.31 & 28.28 & $0.01$ \\ \hline
+\end{tabular}
+\end{center}
+
+Under this model, we predict a positive correlation between seniority level and salary. There is a difference between average salary of males and females. Furthermore, we fitted three general linear models to check the correlation between gender and productivity:
+
+\begin{equation}
+\label{eqn:m1.2}
+y_{productivity} = X\beta_{gender}  + \epsilon 
+\end{equation}
+
+\begin{equation}
+\label{eqn:m1.3}
+y_{salary} = X\beta_{gender}  + \epsilon 
+\end{equation}
+
+\begin{equation}
+\label{eqn:m1.4}
+y_{salary} = X\beta_{productivity}  + \epsilon 
+\end{equation}
+
+According to \ref{eqn:m1.2}, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). \ref{eqn:m1.4} indicates a negative correlation between productivity score and salary level. Together, this means productivity is a confounding variable between gender and productivity. 
+
+```{r, include=FALSE}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
 # Removed "Prefer not to say" from gender since it doesn't provide additional information
 # fixed effect: gender, seniority, quarter 
@@ -78,17 +133,18 @@ In our opinion, the system is fair during each of the three process, in accordan
 current <- current %>% filter(gender != "Prefer not to say")
 model1.1 <- lmer(salary ~ gender + seniority + quarter + (1|productivity) + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
 summary(model1.1)
-confint(model1.1)
+# confint(model1.1)
 ```
 
-```{r}
+
+```{r, include = FALSE}
 # there exists correlation between gender and productivity according to the data given
 model1.2 <- glm(productivity ~ gender, data = current)
 kable(tidy(model1.2))
 summary(model1.2)
 ```
 
-```{r}
+```{r, include = FALSE}
 #This model shows that there is a difference in salary between male and female, but there might be other reasons why the gap exists
 model1.3 <- glm(salary ~ gender, data = current)
 kable(tidy(model1.3))
@@ -96,7 +152,7 @@ summary(model1.3)
 confint(model1.3)
 ```
 
-```{r}
+```{r, include=FALSE}
 # there exists negative correlation between salary and productivity according to the data given
 # worth to mention in the report: higher productivity leads to lower salary
 model1.4 <- glm(salary ~ productivity, data = current)
@@ -104,7 +160,7 @@ kable(tidy(model1.4))
 summary(model1.4)
 ```
 
-```{r}
+```{r, include=FALSE}
 # The reduced model from the main model - this can be the final model I think
 # Tried seniority, gender, quarter, employeeid, team, productivity for level from the predictors and the reduced model has a worse performance comparing to the full model
 # Tried removing leadership_for_level and the reduced model had a better performance comparing to the original, therefore, it is not necessary to include this predictor into the model
@@ -117,26 +173,70 @@ summary(model1.5)
 lmtest::lrtest(model1.1, model1.5)
 ```
 
-
-_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
-
 ## Does there exist bias in the hiring process?
 
-```{r}
+We assess the bias in the company's hiring process using a hiring dataset. The hiring process contains three phases, where at each phase, different variables are examined by the human resourses department to determine the successfull applicants. Therefore we derive 3 different data sets from the original data and formed data of new applicants at each phase. The variable of interest is whether the candidate made it to the next phase, which is represented by a binary variable. For this reason, we use general linear models with family of binomials to inference the hiring results. The model predicts p in \ref{#eq:logistic} where p is the probability of event A that we are interested in, $\beta_0$is the intercept, $x_1...x_K$ are our variables of interest and $\beta_1...\beta_k$ are parameters for each of these variables.
+
+\begin{equation}
+log(\frac{p}{1-p})=\beta_0+\beta_1x_1+...+\beta_kx_k 
+\end{equation}
+
+At phase 1, the predicting variables include gpa, whether candidate has extracurricular experience, whether candicate submitted a cover letter and whether candidate has working experience. The results are summarized:
+
+\begin{center}
+\captionof{table}{Statistics Summary for Phase 1 Hiring Model}
+\begin{tabular}{|l|l|l|l|}
+\hline
+Variable & $\hat{\beta}$ & Std. Error & p-value \\ \hline
+intercept & -25.16 & 648.71 & 0.96 \\ \hline
+prefer not to say & 0.16 & 0.85 & 0.84 \\ \hline
+women & -0.05 & 0.22 & 0.78 \\ \hline
+gpa & 2.09 & 0.23 & $<2e^{-16}$ \\ \hline
+extra-curricular & 0.29 & 0.21 & 0.17 \\ \hline
+cover letter & -18.68 & 648.7 & 0.97 \\ \hline
+work experience & 0.76 & 0.27 & 0.01 \\ \hline
+\end{tabular}
+\end{center}
+
+According to $\alpha=0.05$, only gpa and work experience affects the result of phase 1, where both variables have a positive relationship with the chance of passing phase 1. Note that gender is not a significant predictor in this model.
+
+```{r, include = FALSE}
 phase1_new_applicants
 # pass_phase1 ~ gender* cv gpa cover_letter (phase1)
 model2.1 <- glm(pass_phase1.x ~ gender + gpa + extracurriculars + cv + work_experience, family = binomial(link = "logit"), data = phase1_new_applicants)
 summary(model2.1)
 ```
 
-```{r}
+At phase 2, the predicting variables include the team which candidate applied for, whether candidate has extracurricular experience, whether candidate has working experience, and three scores representing writing, speaking and technical skills. The results are summarized:
+
+\begin{center}
+\captionof{table}{Statistics Summary for Phase 2 Hiring Model}
+\begin{tabular}{|l|l|l|l|}
+\hline
+Variable & $\hat{\beta}$ & Std. Error & p-value \\ \hline
+intercept & -24.15 & 4.79 & $4.77e^{-7}$ \\ \hline
+prefer not to say & 1974.74 & 0.85 & 0.99 \\ \hline
+women & -0.63 & 0.79 & 0.42 \\ \hline
+team & 1.4 & 0.76 & 0.06 \\ \hline
+extra-curricular & 0.71 & 0.21 & 0.37 \\ \hline
+work experience & 0.73 & 0.27 & 0.88 \\ \hline
+technical skills & 0.02 & 0.27 & $7.06e^{-5}$ \\ \hline
+writing skills & 0.1 & 0.02 & $9.93e^{-5}$ \\ \hline
+speaking skills & 0.9 & 0.22 & $9.13e^{-6}$ \\ \hline
+leadership presence & 1.00 & 0.21 & $3.73e^{-5}$ \\ \hline
+\end{tabular}
+\end{center}
+
+According to $\alpha=0.05$,all the skills score and leadership presence affects the result of phase 1, work experience is no longer a predictor for the chance of success at phase 2. 
+
+```{r, include=FALSE}
 # pass_phase2 ~ gender* cv gpa cover_letter tech writing speaking (phase2)
 # everyone passed phase 1 has cv
 model2.2 <- glm(pass_phase2.x ~ gender + team_applied_for + extracurriculars + work_experience + technical_skills + writing_skills + leadership_presence + speaking_skills, family = binomial(link = "logit"), data = phase2_new_applicants)
 summary(model2.2)
 ```
 
-```{r}
+```{r, include = FALSE}
 # final_hired ~ gender* cv gpa cover_letter tech writing speaking rating1 rating2 (phase3)
 # everyone passed phase 1 has cv
 # too few datapoints model can't converge... the only model that can converge is to use gender 
@@ -147,28 +247,31 @@ summary(model2.3)
 table(phase3_new_applicants$avg)
 ```
 
-```{r}
+```{r, include=FALSE}
 model2.4 <- glm(final_hired.x ~ gpa, family = binomial(link = "logit"), data = phase1_new_applicants)
 summary(model2.4)
 ```
 
+Phase3 and final TBD
+
+To conclude, each phase of recruitment focuses on difference traits of a candidates, and there is no significant relationship between gender and the rate of success. Besides, there is no significant priority out of the three skills recorded. 
+
 ## Is there gender bias in the promotion process?
 
-```{r}
+```{r gender-promotion, fig.cap="The Number of Promotion By Gender"}
 promotion %>% ggplot(aes(x = gender, y = promotion)) + geom_boxplot()
 ```
 
-```{r}
+```{r, include=FALSE}
 model3.1 <- glm(promotion ~ gender, data = promotion)
 kable(tidy(model3.1))
 summary(model3.1)
 ```
 
+In order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees.
+We counted the number of times promoted for each empoyee and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because there are 11 of them out of 608 employees. Figure 1 indicates the number of times being promoted across male and female employees. Observe that the meadian of promotion times for male is higher than the median for females, 1 for males and 0 for females. The employee being promoted the most is male and he got promoted 7 times. 
 
-
-
-
-_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
+We fitted a general linear model on the promotion data set using gender as a predictor for the number of times being promoted. The result indicates that female employees is promoted less than male employees, however(...)
 
 ## Data Visualization
 
@@ -293,80 +396,80 @@ phase1_new_applicants %>% ggplot(aes(x = as.character(gender), y = gpa)) + geom_
 
 
 ```{r, fig.cap="GPA Distribtion Across Hiring Results"}
-gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()+
+# gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()+
   xlab("hiring results")
-gpa_if_hired
+# gpa_if_hired
 ```
 
 ```{r, fig.cap="GPA Distribution Across Phase1 Results"}
-gpa_if_pass_phase1 <- phase1_new_applicants %>% ggplot(aes(x = as.character(pass_phase1), y = gpa)) + geom_boxplot()+
-  xlab("phase1 results")
-gpa_if_pass_phase1
+# gpa_if_pass_phase1 <- phase1_new_applicants %>% ggplot(aes(x = as.character(pass_phase1), y = gpa)) + geom_boxplot()+
+#   xlab("phase1 results")
+# gpa_if_pass_phase1
 ```
 
 ```{r, fig.cap="Speaking Skills Score Across Hiring Results"}
 #same scale 
-phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking_skills)) + geom_boxplot()+
-  xlab("hiring results")+ylab("speaking skills score")
+# phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking_skills)) + geom_boxplot()+
+#   xlab("hiring results")+ylab("speaking skills score")
 ```
 
 ```{r, fig.cap="Speaking Skills Score Across Phase2 Results"}
 #same scale 
-phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = speaking_skills)) + geom_boxplot()+
-  xlab("phase2 results")+ylab("speaking skills score")
+# phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = speaking_skills)) + geom_boxplot()+
+  # xlab("phase2 results")+ylab("speaking skills score")
 ```
 
 ### Writing Skills VS if hired
 ```{r, fig.cap="Writing Skills Score Across Hiring Results"}
-phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()+
-  xlab("hiring results")+ylab("writing skills score")
+# phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()+
+  # xlab("hiring results")+ylab("writing skills score")
 ```
 ![](images/writing_hired.png)
 ```{r, fig.cap="Writing Skills Score Across Phase2 Results"}
-phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = writing_skills)) + geom_boxplot()+
-  xlab("phase2 results")+ylab("writing skills score")
+# phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = writing_skills)) + geom_boxplot()+
+  # xlab("phase2 results")+ylab("writing skills score")
 ```
 
 
 ```{r, fig.cap="Technical Skills Score Across Hiring Results"}
-phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()+
-  xlab("hiring results")+ylab("technical skills score")
+# phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()+
+  # xlab("hiring results")+ylab("technical skills score")
 ```
 
 
 ```{r}
-phase1_new_applicants %>% 
-  filter(final_hired == '1') %>% 
-  group_by(applicant_id) %>% 
-  ggplot(aes(x = gender, y = gpa))+
-  geom_point()
+# phase1_new_applicants %>% 
+  # filter(final_hired == '1') %>% 
+  # group_by(applicant_id) %>% 
+  # ggplot(aes(x = gender, y = gpa))+
+  # geom_point()
 ```
 
 
 ```{r}
-phase2_new_applicants %>% 
-  filter(final_hired == '1') %>% 
-  group_by(applicant_id) %>% 
-  ggplot(aes(x = gender, y = technical_skills))+
-  geom_point()
+# phase2_new_applicants %>% 
+  # filter(final_hired == '1') %>% 
+  # group_by(applicant_id) %>% 
+  # ggplot(aes(x = gender, y = technical_skills))+
+  # geom_point()
 ```
 
 
 ```{r}
-phase2_new_applicants %>% 
-  filter(final_hired == '1') %>% 
-  group_by(applicant_id) %>% 
-  ggplot(aes(x = gender, y = writing_skills))+
-  geom_point()
+# phase2_new_applicants %>% 
+  # filter(final_hired == '1') %>% 
+  # group_by(applicant_id) %>% 
+  # ggplot(aes(x = gender, y = writing_skills))+
+  # geom_point()
 ```
 
 
 ```{r}
-phase2_new_applicants %>% 
-  filter(final_hired == '1') %>% 
-  group_by(applicant_id) %>% 
-  ggplot(aes(x = gender, y = speaking_skills))+
-  geom_point()
+# phase2_new_applicants %>% 
+  # filter(final_hired == '1') %>% 
+  # group_by(applicant_id) %>% 
+  # ggplot(aes(x = gender, y = speaking_skills))+
+  # geom_point()
 
 ```
 
@@ -377,7 +480,7 @@ phase2_new_applicants %>%
 _In this section you will summarize your findings across all the research questions and discuss the strengths and limitations of your work. It doesn't have to be long, but keep in mind that often people will just skim the intro and the discussion of a document like this, so make sure it is useful as a semi-standalone section (doesn't have to be completely standalone like the executive summary)._
 
 ### Strengths and limitations
-- Dataset size tooooo small!! especially the final hired data and the phase 3 data (22 observations)
+- The size of final hires data set is too small for inference. For data of this size(22 observations), inference of anykind is not meaningful. Alternatively, we rely on data visualization to come up with our conclusion. 
 
 
 
