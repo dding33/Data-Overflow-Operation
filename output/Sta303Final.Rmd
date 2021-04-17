@@ -30,6 +30,11 @@ library(cowplot)
 library(lme4)
 library(ggpubr)
 library(knitr)
+library(tableone)
+library(broom)
+
+#install.packages("tableone")
+
 # this should supress all code and messages
 knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 ```
@@ -37,6 +42,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 ```{r, warning=FALSE}
 # Import cleaned data
 current <- read_csv("clean/current.csv")
+promotion <- read_csv("clean/promotion.csv")
 final_hires <- read_csv("clean/final-hires-newgrad_2020.csv")
 phase1_new_applicants <- read_csv("clean/phase1_new.csv")
 phase2_new_applicants <- read_csv("clean/phase2_new.csv")
@@ -48,7 +54,7 @@ phase3_new_applicants <- read_csv("clean/phase3_new.csv")
 
 We (Data Over Flow Co.Ltd.) have examined the structure of human resource system of the company (the Black Saber Software) by analyzing data on the company's hiring, promotion and salary process and found there to be no bias. 
 
-In our opinion, the system is fair during each of the three process, in accordance with Ontario's Human Rights Code and Black Saber's policies. Specifically, neither hiring nor promition process shows sign of gender/racial discrimination; the individual salary level is fairly evaluated based non-personal and work-related parameters only.  
+In our opinion, the system is fair during each of the three process, in accordance with Ontario's Human Rights Code and Black Saber's policies. Specifically, neither hiring nor promotion process shows sign of gender/racial discrimination; the individual salary level is fairly evaluated based non-personal and work-related parameters only.  
 
 
 \newpage
@@ -66,70 +72,101 @@ In our opinion, the system is fair during each of the three process, in accordan
 
 ```{r}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
+# Removed "Prefer not to say" from gender since it doesn't provide additional information
 # fixed effect: gender, seniority, quarter 
 # random effect: team, leadership, productivity 
-model1 <- lmer(salary ~ gender + role_seniority + financial_q + (1|team) + (1| leadership_for_level) + (1|productivity), data = current)
-summary(model1)
-```
-```{r}
-# The reduced model from the main model, took productivity out from random effect
-# fixed effect: gender, seniority, quarter 
-# random effect: team, leadership
-model2 <- lmer(salary ~ gender + role_seniority + financial_q + (1|team) + (1| leadership_for_level), data = current)
-summary(model2)
-# Likelihood ratio test comparing the two models, small p value indicating the second model is better
-lmtest::lrtest(model1, model2)
+current <- current %>% filter(gender != "Prefer not to say")
+model1.1 <- lmer(salary ~ gender + seniority + quarter + (1|productivity) + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
+summary(model1.1)
+confint(model1.1)
 ```
 
 ```{r}
-# The reduced model from the main model, took productivity and team out from random effect
-# fixed effect: gender, seniority, quarter 
-# random effect: leadership
-model3 <- lmer(salary ~ gender + role_seniority + financial_q + (1| leadership_for_level), data = current)
-#summary(model3)
-# Likelihood ratio test comparing the two models, small p value indicating the second model is better
-lmtest::lrtest(model2, model3)
+# there exists correlation between gender and productivity according to the data given
+model1.2 <- glm(productivity ~ gender, data = current)
+kable(tidy(model1.2))
+summary(model1.2)
 ```
 
 ```{r}
-# The reduced model from the main model, took productivity and leadership out from random effect
-# fixed effect: gender, seniority, quarter 
-# random effect: team
-model4 <- lmer(salary ~ gender + role_seniority + financial_q + (1| team), data = current)
-#summary(model3)
-# Likelihood ratio test comparing the two models, small p value indicating the second model is better
-lmtest::lrtest(model3, model4)
+#This model shows that there is a difference in salary between male and female, but there might be other reasons why the gap exists
+model1.3 <- glm(salary ~ gender, data = current)
+kable(tidy(model1.3))
+summary(model1.3)
+confint(model1.3)
 ```
+
+```{r}
+# there exists negative correlation between salary and productivity according to the data given
+# worth to mention in the report: higher productivity leads to lower salary
+model1.4 <- glm(salary ~ productivity, data = current)
+kable(tidy(model1.4))
+summary(model1.4)
+```
+
+```{r}
+# The reduced model from the main model - this can be the final model I think
+# Tried seniority, gender, quarter, employeeid, team, productivity for level from the predictors and the reduced model has a worse performance comparing to the full model
+# Tried removing leadership_for_level and the reduced model had a better performance comparing to the original, therefore, it is not necessary to include this predictor into the model
+
+model1.5 <- lmer(salary ~ gender + seniority + quarter + (1|team) + (1|productivity) + (1|employee_id), data = current)
+summary(model1.5)
+#confint(model1.5)
+
+# Likelihood ratio test comparing the two models, small p value indicating the second model is better
+lmtest::lrtest(model1.1, model1.5)
+```
+
 
 _For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
 
 ## Does there exist bias in the hiring process?
 
 ```{r}
+phase1_new_applicants
 # pass_phase1 ~ gender* cv gpa cover_letter (phase1)
-model2.1 <- glm(pass_phase1 ~ gender + gpa + extracurriculars + cv + work_experience, family = binomial(link = "logit"), data = phase1_new_applicants)
+model2.1 <- glm(pass_phase1.x ~ gender + gpa + extracurriculars + cv + work_experience, family = binomial(link = "logit"), data = phase1_new_applicants)
 summary(model2.1)
 ```
+
 ```{r}
 # pass_phase2 ~ gender* cv gpa cover_letter tech writing speaking (phase2)
 # everyone passed phase 1 has cv
-model2.2 <- glm(pass_phase2 ~ gender + team_applied_for + cover_letter + extracurriculars + work_experience + technical_skills + writing_skills + leadership_presence + speaking_skills, family = binomial(link = "logit"), data = phase2_new_applicants)
+model2.2 <- glm(pass_phase2.x ~ gender + team_applied_for + extracurriculars + work_experience + technical_skills + writing_skills + leadership_presence + speaking_skills, family = binomial(link = "logit"), data = phase2_new_applicants)
 summary(model2.2)
 ```
+
 ```{r}
 # final_hired ~ gender* cv gpa cover_letter tech writing speaking rating1 rating2 (phase3)
 # everyone passed phase 1 has cv
 # too few datapoints model can't converge... the only model that can converge is to use gender 
 phase3_new_applicants <- phase3_new_applicants %>% mutate(avg = (interviewer_rating_1+interviewer_rating_2)/2)
-model2.3 <- glm(final_hired ~ gender, family = binomial(link = "logit"), data = phase3_new_applicants)
+model2.3 <- glm(final_hired.x.x ~ gender.x, family = binomial(link = "logit"), data = phase3_new_applicants)
 summary(model2.3)
 #table(phase3_new_applicants$gender, phase3_new_applicants$final_hired)
 table(phase3_new_applicants$avg)
 ```
 
-_For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
+```{r}
+model2.4 <- glm(final_hired.x ~ gpa, family = binomial(link = "logit"), data = phase1_new_applicants)
+summary(model2.4)
+```
 
-## Informative title for section addressing a research question
+## Is there gender bias in the promotion process?
+
+```{r}
+promotion %>% ggplot(aes(x = gender, y = promotion)) + geom_boxplot()
+```
+
+```{r}
+model3.1 <- glm(promotion ~ gender, data = promotion)
+kable(tidy(model3.1))
+summary(model3.1)
+```
+
+
+
+
 
 _For each research question, you will want to briefly describe any data manipulation, show some exploratory plots/summary tables, report on any methods you use (i.e. models you fit) and the conclusions you draw from these_
 
