@@ -95,9 +95,9 @@ We consider salary as the key variable to measure employee renumaration and henc
 y = X\beta + Zu + \epsilon 
 \end{equation}
 
-Linear mixed model considers the response variable y as a vector of observations with $E(y)=X\beta$. $\beta$ is an unknown vector for the fixed effects and u is an unknown vector for the random effects. This model is appropriate when non-independence exists in the data. In our initial model, we consider gender, seniority and the financial quarter as fixed effects. We treat team, leadership for level and productivity score as random effects. Note that random effects are included to work with multiple levels of correlated data. This allows the model to account for both the variability within random effect groups as well as between those groups, which is crucial because our data covers information across various time intervals and hierarchical corporate structure. 
+Linear mixed model considers the response variable y as a vector of observations with $E(y)=X\beta$. $\beta$ is an unknown vector for the fixed effects and u is an unknown vector for the random effects. This model is appropriate when non-independence exists in the data. In our initial model, we consider gender, seniority, productivity, and the financial quarter as fixed effects. This is because we are interested in also observing each of these predictors' influence on salary. We treat team and leadership for level as random effects. This is because we are less interested in their effects on salary but we want to include them in the model to reduce influence caused by various groupings/levels. Note that random effects are included to work with multiple levels of correlated data. This allows the model to account for both the variability within random effect groups as well as between those groups, which is crucial because our data covers information across various time intervals and hierarchical corporate structure. 
 
-Given that our full model uses all factors, we tried to reduce the number of predictors to find the simplest model that incorporates all the relevant information. By attempting to drop predictors one by one and conducting likelihood ratio tests, we found that all predictors beside "leadership" are significant. Thus, our final model dropped leadership_for_level as a predictor and included all other predictors. The final model gives the following results:
+Given that our full model uses all factors, we tried to reduce the number of predictors to find the simplest model that incorporates all the relevant information. We first noticed that productivity is not a significant predictor in our full model, hence it is removed. Then, by attempting to drop predictors one by one and conducting likelihood ratio tests, we found that all other predictors beside "leadership" are significant. Thus, our final model dropped productivity and leadership_for_level as predictors and included all other predictors. The final model gives the following results:
 
 \begin{center}
 \captionof{table}{Statistics Summary for Reduced Salary Model}
@@ -114,7 +114,7 @@ quarter & 74.31 & 28.28 & $0.01$ \\ \hline
 \end{tabular}
 \end{center}
 
-Under this model, we predict a positive correlation between seniority level and salary. Given the baseline group as directors, it is reasonable to see any positions below director receives lower salaries and any positions above director receives higher salaries. There appears to be a difference between average salaries of males and females. More specifically holding all else constant, being female reduces the salary by 2953.78 on average. Prior to this model, we also considered the naive model that simply regresses gender on salary without controlling for any variables. The effect found was that being women reduces one's salary by 2680.4. We see that this difference is larger now after eliminating many confounding variables. For further analysis, we fitted three general linear models to check the correlation between gender and productivity:
+Under this model, we predict a positive and statistically significant correlation between seniority level and salary. Given the baseline group as directors, it is reasonable to see any positions below director receives lower salaries and any positions above director receives higher salaries. There appears to be a difference between average salaries of males and females. More specifically holding all else constant, being female reduces the salary by 2953.78 on average. Prior to this model, we also considered the naive model that simply regresses gender on salary without controlling for any variables. The effect found was that being women reduces one's salary by 2680.4. We see that this difference is larger now after eliminating many confounding variables. For further analysis, we fitted three general linear models to check the correlation amongst gender, productivity, and salary: 
 
 \begin{equation}
 \label{eqn:m1.2}
@@ -131,7 +131,8 @@ y_{salary} = X\beta_{gender}  + \epsilon
 y_{salary} = X\beta_{productivity}  + \epsilon 
 \end{equation}
 
-According to \ref{eqn:m1.2}, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). \ref{eqn:m1.4} indicates a negative correlation between productivity score and salary level, or one unit increase in productivity leads to a decrease of 44.73 in salary. Both correlations are significant at the 0.05 level, suggesting that productivity is a significant confounding variable between gender and salary.  
+According to \ref{eqn:m1.2}, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). \ref{eqn:m1.4} indicates a negative correlation between productivity score and salary level, or one unit increase in productivity leads to a decrease of 44.73 in salary. This is an interesting finding because it suggests that women tend to have higher productivity on average, which leads to lower salaries. This could be a potential sign of gender bias or compensation not in line with individual contribution. However, by analzying the full model which takes multiple other variables into account, we realize that productivity is not a useful predictor for salary and hence this relationship between gender, productivity and salary is no longer valid considering other variables. Hence, there is no bias in which females work harder but get paid less. 
+
 
 ```{r,include=FALSE}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
@@ -183,13 +184,13 @@ lmtest::lrtest(model1.1, model1.5)
 
 ## Does there exist bias in the hiring process?
 
-We assess the bias in the company's hiring process using a hiring dataset. The hiring process contains three phases, where at each phase, different variables are examined by the human resourses department to determine the successfull applicants. Therefore we derive 3 different data sets from the original data and formed data of new applicants at each phase. The variable of interest is whether the candidate made it to the next phase, which is represented by a binary variable. For this reason, we use general linear models with family of binomials to inference the hiring results. The model predicts p in \ref{#eq:logistic} where p is the probability of event A that we are interested in, $\beta_0$is the intercept, $x_1...x_K$ are our variables of interest and $\beta_1...\beta_k$ are parameters for each of these variables.
+Moving on, we assessed the potential bias in the company's hiring process by using the hiring datasets. The hiring process contains three phases, where at each phase, different variables are examined by the human resourses department to determine the successfull applicants. Therefore we derived three different data sets from the original data provided and formed data of successful applicants at each phase. The response variable of interest is whether the candidate made it to the next phase, which is represented by a binary variable 'final_hired', where 1 suggests hired and 0 suggests rejected. For this reason, we used general linear models with the family of binomials to model the hiring results. The model predicts p in \ref{#eq:logistic} where p is the probability of event A that we are interested in, $\beta_0$is the intercept, $x_1...x_K$ are our variables of interest and $\beta_1...\beta_k$ are parameters for each of these variables.
 
 \begin{equation}
 log(\frac{p}{1-p})=\beta_0+\beta_1x_1+...+\beta_kx_k 
 \end{equation}
 
-At phase 1, the predicting variables include gpa, whether candidate has extracurricular experience, whether candicate submitted a cover letter and whether candidate has working experience. The results are summarized:
+At phase 1, we created the binary response variable 'pass_phase1' to identify whether the candidated passed this phase or not. The predictor variables include gpa, whether the candidate has extracurricular experience, whether the candicate submitted a cover letter and whether the candidate has working experience. The results are summarized:
 
 \begin{center}
 \captionof{table}{Statistics Summary for Phase 1 Hiring Model}
@@ -206,16 +207,16 @@ work experience & 0.76 & 0.27 & 0.01 \\ \hline
 \end{tabular}
 \end{center}
 
-According to $\alpha=0.05$, only gpa and work experience affects the result of phase 1, where both variables have a positive relationship with the chance of passing phase 1. Note that gender is not a significant predictor in this model.
+According to $\alpha=0.05$, only gpa and work experience are significant predictors to predicting whether the candidate passes the first phase, where both variables have a positive relationship with the chance of passing phase 1. It is expected that candidates with higher GPA and more work experience are selected because of higher talent. Notice that although the estimate is slighlty negative for gender, it is not a significant predictor in this model.
 
 ```{r, include = FALSE}
 phase1_new_applicants
 # pass_phase1 ~ gender* cv gpa cover_letter (phase1)
-model2.1 <- glm(pass_phase1.x ~ gender + gpa + extracurriculars + cv + work_experience, family = binomial(link = "logit"), data = phase1_new_applicants)
+model2.1 <- glm(pass_phase1 ~ gender + gpa + extracurriculars + cv + work_experience, family = binomial(link = "logit"), data = phase1_new_applicants)
 summary(model2.1)
 ```
 
-At phase 2, the predicting variables include the team which candidate applied for, whether candidate has extracurricular experience, whether candidate has working experience, and three scores representing writing, speaking and technical skills. The results are summarized:
+At phase 2, we again created the binary response variable 'pass_phase2' to indicate whether the candidate passed phase 2. The predicting variables include the team which candidate applied for, whether the candidate has extracurricular experience, whether the candidate has working experience, and three scores representing writing, speaking and technical skills. The results are summarized:
 
 \begin{center}
 \captionof{table}{Statistics Summary for Phase 2 Hiring Model}
@@ -235,34 +236,33 @@ leadership presence & 1.00 & 0.21 & $3.73e^{-5}$ \\ \hline
 \end{tabular}
 \end{center}
 
-According to $\alpha=0.05$,all the skills score and leadership presence affects the result of phase 1, work experience is no longer a predictor for the chance of success at phase 2. 
+According to $\alpha=0.05$, the significant predictors are technical skills, writing skills, speaking skills and leadership presence. We found that significant variables to pass-phase 1 are no longer significant. This is justified as candidates in this phase likely all have strong gpa and work experiences, hence the decision to move on will be based on the new information on skills and leadership. We notice that all three skills have positive and similar effect on the likelihood of passing this phase. Again, although the estimate for gender is negative, it is not statistically significant. 
 
 ```{r, include=FALSE}
 # pass_phase2 ~ gender* cv gpa cover_letter tech writing speaking (phase2)
 # everyone passed phase 1 has cv
-model2.2 <- glm(pass_phase2.x ~ gender + team_applied_for + extracurriculars + work_experience + technical_skills + writing_skills + leadership_presence + speaking_skills, family = binomial(link = "logit"), data = phase2_new_applicants)
+model2.2 <- glm(pass_phase2 ~ gender + team_applied_for + extracurriculars + work_experience + technical_skills + writing_skills + leadership_presence + speaking_skills, family = binomial(link = "logit"), data = phase2_new_applicants)
 summary(model2.2)
 ```
 
+Last but not least, we use the phase 3 data to analyze the final hired candidates. 'Final_hired' is the binary response variable indicating whether the candidate passed this phase or in other words, got hired. We also created the variable 'avg' as the average of the candidate's two interview ratings. Although the data size is limited, we still find that gender is not significant at this phase as well. 
 ```{r, include = FALSE}
 # final_hired ~ gender* cv gpa cover_letter tech writing speaking rating1 rating2 (phase3)
 # everyone passed phase 1 has cv
 # too few datapoints model can't converge... the only model that can converge is to use gender 
 phase3_new_applicants <- phase3_new_applicants %>% mutate(avg = (interviewer_rating_1+interviewer_rating_2)/2)
-model2.3 <- glm(final_hired.x.x ~ gender.x, family = binomial(link = "logit"), data = phase3_new_applicants)
+model2.3 <- glm(final_hired ~ gender + avg, family = binomial(link = "logit"), data = phase3_new_applicants)
 summary(model2.3)
 #table(phase3_new_applicants$gender, phase3_new_applicants$final_hired)
 table(phase3_new_applicants$avg)
 ```
 
 ```{r, include=FALSE}
-model2.4 <- glm(final_hired.x ~ gpa, family = binomial(link = "logit"), data = phase1_new_applicants)
+model2.4 <- glm(final_hired ~ gpa, family = binomial(link = "logit"), data = phase1_new_applicants)
 summary(model2.4)
 ```
 
-Phase3 and final TBD
-
-To conclude, each phase of recruitment focuses on difference traits of a candidates, and there is no significant relationship between gender and the rate of success. Besides, there is no significant priority out of the three skills recorded. 
+To conclude, we find that there is no gender bias during any of the phase of this hiring process. The candidates who pass each phase are the ones with stronger ability and talent, which is the fair decision to make during recruiting. We notice that the company is also not more biased on one skill out of writing, technical or speaking skills than others. This suggests Black Saber is also not having potential bias for candidates whose English may not be their first language and values talent equally.  
 
 ## Is there gender bias in the promotion process?
 
@@ -282,8 +282,7 @@ kable(tidy(model3.2))
 summary(model3.2)
 ```
 
-In order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees.
-We counted the number of times promoted for each empoyee and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because there are 11 of them out of 608 employees. Figure 1 indicates the number of times being promoted across male and female employees. Observe that the meadian of promotion times for male is higher than the median for females, 1 for males and 0 for females. The employee being promoted the most is male and he got promoted 7 times. 
+For the third research question, in order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees. We counted the number of times each employee got promoted and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because that is only 11 out of 608 employees. Figure 1 indicates the number of times being promoted across male and female employees. We observed that the median of promotion times for male is higher than the median for females: 1 for males and 0 for females. The employee being promoted the most is a male who got promoted 7 times. 
 
 We fitted a general linear model on the promotion data set using gender as a predictor for the number of times being promoted. The result indicates that female employees is promoted less than male employees, however(...)
 
@@ -502,14 +501,26 @@ _In this section you will summarize your findings across all the research questi
 # Consultant information
 ## Consultant profiles
 
-**Rain Wu**. Rain is a senior consultant with DataOverFlow. She specializes in data visualization. Rain earned her Bachelor of Science, Specialist in Statistics Methods and Practice, from the University of Toronto in 2022. Before joining DataOverFlow, Rain has 3 year of working experience as a data engineer at Aviva in Markham, Toronto. 
+**Rain Wu**. As the team leader, Rain is currently a senior consultant with Data OverFlow. She joined the company 6 years ago and specializes in data visualization. Rain earned her degree in Bachelor of Science, Specialist in Statistics Methods and Practice, from the University of Toronto in 2012. Before joining DataOverFlow, Rain has 3 year of working experience as a data engineer at Aviva in Markham, Toronto. 
 
-**Tina Wang**. Tina is a junior consultant with DataOverFlow. She specializes in reproducible analysis. Tina earned her Bachelor of Science, Majoring in Computer Science and Statistics from the University of Toronto in 2022. Tina earned her master degree in financial insurance from the University of Toronto in 2024.
+**Tina Wang**. Tina is currently a junior consultant with Data OverFlow who joined us 1 year ago. She specializes in reproducible analysis. Tina earned her degree in Bachelor of Science, Majoring in Computer Science and Statistics from the University of Toronto in 2018. Tina then pursued a Masters degree in Financial Insurance from the University of Toronto in 2020.
 
-**Yiqu Ding**. Yiqu is a junior consultant with DataOverFlow. She specializes in statistical communication. Yiqu earned her Bachelor of Science, Majoring in Statistics and mathmatical application in finance and economics from the University of Toronto in 2022. Yiqu earned her master degree in financial insurance from the University of Toronto in 2024.
+**Yiqu Ding**. Yiqu is a junior consultant with Data OverFlow who also joined us 1 year go. She specializes in statistical communication. Yiqu earned her degree in Bachelor of Science, specializing in mathmatical application in finance and economics with a major in statistics from the University of Toronto in 2017. Yiqu has pursued a Masters degree in Financial Engineering at the University of Waterloo, during the time which she also gained research experience in machine learning algorithmns. 
 
 ## Code of ethical conduct
 
-* We respect and protect confidential data obtained from, or relating to, clients and third parties, as well as personal data and information about about employees from Data Over Flow. We only share information when there is a business purpose, and then do so in accordance with applicable laws and professional standards.
-*	We take proactive measures to safeguard our archives, computers and other data-storage devices containing confidential information or personal data. We promptly report any loss, damage or inapproprita disclosure of confidential information or personal data. 
-* We use social media and technology in a responsible way and respect everyone we work with. We obtain, develop and protect intellectual capital in an appropriate manner. We respect the resrtictions on its use and reproduction. 
+*	At Data OverFlow, We respect and protect all confidential data obtained from, or relating to, clients and third parties, as well as personal data and information about employees from Data OverFlow. We only share information when there is a business purpose, and then do so in accordance with applicable laws and professional standards. 
+
+* We serve our clients with integrity and avoid any conflict of interest that may provide competitive advantages. We respect all intellectual properties of our clients and other consulting firms, and will not use proprietary information or methodologies without permission.
+
+*	We take proactive measures to safeguard our archives, computers and other data-storage devices containing confidential information or personal data. We promptly report any loss, damage or inappropriate disclosure of confidential information or personal data. 
+
+* We use social media and technology in a responsible way and respect everyone we work with. We obtain, develop and protect intellectual capital in an appropriate manner. We respect the restrictions on its use and reproduction. 
+
+* We work towards the goal of maximizing our positive impact on the people, the community and the environment. We are committed to meeting our social, environmental, economic, cultural, legal and ethical corporate responsibilities.
+
+
+
+
+
+
