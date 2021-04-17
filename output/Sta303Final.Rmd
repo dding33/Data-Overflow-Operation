@@ -53,15 +53,21 @@ phase3_new_applicants <- read_csv("clean/phase3_new.csv")
 \newpage
 # Executive summary
 
-We (Data Over Flow Co.Ltd.) have examined the structure of human resource system of the company (the Black Saber Software) by analyzing data on the company's hiring, promotion and salary process and found there to be no bias. 
+First, we would like to thank your company (Black Saber Software) for providing another opportunity to us (Data Over Flow Co. Ltd.). It has always been a pleasure working with your company. 
+
+As requested from your side, we have formed a team of three experienced analysts to work on this project. Specifically, the team examined the structure of the human resource system of your company by analyzing the provided data on the hiring, promotion and salary information. Our examination yielded the final conclusion that that the hiring and remuneration processes are fair and based on talent and value to the company. 
 
 The key findings are:
 
-- Even though there exists difference between salaries of male and female employees, the difference is not the evidence of bias because productivity acts as a confounder variable between gender and salary;
-- Among the 3 phases of recruitments, the chance of success is dependent on different variables such as gpa and work experience, gender is not a significant predicting variable for the chance of success at any of these phases;
+- Even though there exists differences between the average salaries of male and female employees, the difference is not evidence of gender bias because multiple variables act as significant confounding variables between gender and salary. For example, men on average have higher seniority levels and hence are compensated with higher salary based on this higher added-value to the company. 
+
+
+- Among the three phases of recruitments, the chance of successfully landing the job is mostly dependent on other variables such as gpa and work experience. Gender is not found as a significant predicting variable for the chance of success during any of these phases. In other words, candidates with stronger background, talent and potential are selected, regardless of gender. 
+
 - The chances of being promoted is higher for male employees than for female employees, however (...)
 
-In our opinion, the system is fair during each of the three process, in accordance with Ontario's Human Rights Code and Black Saber's policies. Specifically, neither hiring nor promotion process shows sign of gender/racial discrimination; the individual salary level is fairly evaluated based non-personal and work-related parameters only.  
+Based on our findings, we believe that the company is fair in terms of salary distributions for male and female employees. The hiring process empowered by the AI system is also recruiting the best talent without biasing on any gender. The promotion process is also determined by personal ability and contribution to the company. Any individual salary, promotion or hiring decision is made fairly based on non-gender and ability-related parameters only. Overall, Black Saber Software acts in accordance with the Ontario's Human Rights Code and Black Saber's policies.
+
 
 
 \newpage
@@ -69,27 +75,29 @@ In our opinion, the system is fair during each of the three process, in accordan
 
 ## Introduction
 
-We assess the existence of bias from 3 aspects, salary levels, hiring decisions and promotion. We use a combination of model buliding and data visualization to prove our conclusion that there is no bias on personal traits in the company's hiring and enumeration processes. In the following report, 'the company' refers to the BlackSaber Software and 'we' refers to the analysts from Data Over Flow. With no special notes, the assumed level of significance in this report is $\alpha=0.05$.
+We assessed the potential existence of bias from three different aspects: salary levels, hiring decisions, and promotions. We used a combination of model building and data visualization techniques to reach our conclusion that there is no bias in the company's hiring and renumeration processes. In the following report, 'the company' refers to the Black Saber Software and 'we' refers to the analysts from Data Over Flow. With no special notes, the assumed level of significance in this report is $\alpha=0.05$.
 
 ### Research questions
 
-* Salary
-* Hiring
-* Promotion
+The three main research questions of the analysis are as follows: 
 
-## Does there exist bias in current employee enumeration?
+* Is there a gender bias in the salary levels (remuneration) within the company? 
+* Is there a gender bias during the hiring processes of the company? 
+* Is there a gender bias in the promotion possibilities within the company? 
 
-In order to analyze the existence of bias in the current employee enumeration, we fitted a linear mixed model as well as two general linear model on the dataset containing all current employees at the BlackSaber Software. The dataset contains 6909 observations of 9 variables, including all 608 employees of the BlackSaber Software. Each observation records the information of a specific employee at a specific timespot. Based on data visualization, the difference inbetween different level of juniors and seniors are not significant, thus we combine 'Entry-level', 'Junior I', 'Junior II' and 'Junior III' into 'Junior' and combine 'senior I', 'senior II', 'senior III' into 'senior'. 
+## Does there exist bias in current employee renumeration?
 
-We consider salary as the key of measuing employee enumaration and  use it as our response varible. We want to asses whether an employee's salary is affects by his/hers gender in order to detect the existence of bias. On top of that, we include other non-personal variables such as team information, financial quater of the year and seniority of level which are ket factors of salary level given common senses. To incorporate both the fixed effetcs and the random effects of variables on the employee enumaration, we choose to use the linear mixed model:
+In order to analyze whether gender bias exists in the current employee renumeration, we fitted a linear mixed model as well as two general linear models on the dataset containing all current employees at the Black Saber Software. The dataset contains 6909 observations of 9 variables, including all 608 current employees of the Black Saber Software. Each observation records the information of a specific employee at a specific time (a given quarter in a given year). Based on data visualization outputs, the differences between different levels of juniors and seniors are not significant, thus we combined the positions 'Entry-level', 'Junior I', 'Junior II' and 'Junior III' into one category of 'Junior' and combined 'Senior I', 'Senior II', 'Senior III' into another category 'Senior'. 
+
+We consider salary as the key variable to measure employee renumaration and hence used it as the response varible. We want to assess whether an employee's salary is affected by his/her gender in order to detect the existence of bias. On top of that, we included other non-personal variables such as team information, financial quater of the year and seniority of level which are key factors of salary level to reduce potential omitted variable bias between gender and salary. To incorporate both the fixed effetcs and the random effects of variables on the remployee enumaration, we introduced the following linear mixed model:
 
 \begin{equation}
 y = X\beta + Zu + \epsilon 
 \end{equation}
 
-Linear mixed model considers the response variable y as a vector of observations with $E(y)=X\beta$. $\beta$ is an unknown vector for the fixes effects and u is an unknown vector for the random effetcs. In our initial model, we consider gender, seniority and the financial quarter as fixed effects; we treat team, leadership for level and productivity score as random effects. This allows the model to account for both the variability within random effect groups as well as between those group, which is crucial in our case because the data covers information across various time intervals. 
+Linear mixed model considers the response variable y as a vector of observations with $E(y)=X\beta$. $\beta$ is an unknown vector for the fixed effects and u is an unknown vector for the random effects. This model is appropriate when non-independence exists in the data. In our initial model, we consider gender, seniority and the financial quarter as fixed effects. We treat team, leadership for level and productivity score as random effects. Note that random effects are included to work with multiple levels of correlated data. This allows the model to account for both the variability within random effect groups as well as between those groups, which is crucial because our data covers information across various time intervals and hierarchical corporate structure. 
 
-Due to the high correlation between random effect variables, we performed likelihood ratio tests on various reduced models and dropped the leadership for level as a predictor. The final model gives the following results:
+Given that our full model uses all factors, we tried to reduce the number of predictors to find the simplest model that incorporates all the relevant information. By attempting to drop predictors one by one and conducting likelihood ratio tests, we found that all predictors beside "leadership" are significant. Thus, our final model dropped leadership_for_level as a predictor and included all other predictors. The final model gives the following results:
 
 \begin{center}
 \captionof{table}{Statistics Summary for Reduced Salary Model}
@@ -106,7 +114,7 @@ quarter & 74.31 & 28.28 & $0.01$ \\ \hline
 \end{tabular}
 \end{center}
 
-Under this model, we predict a positive correlation between seniority level and salary. There is a difference between average salary of males and females. Furthermore, we fitted three general linear models to check the correlation between gender and productivity:
+Under this model, we predict a positive correlation between seniority level and salary. Given the baseline group as directors, it is reasonable to see any positions below director receives lower salaries and any positions above director receives higher salaries. There appears to be a difference between average salaries of males and females. More specifically holding all else constant, being female reduces the salary by 2953.78 on average. Prior to this model, we also considered the naive model that simply regresses gender on salary without controlling for any variables. The effect found was that being women reduces one's salary by 2680.4. We see that this difference is larger now after eliminating many confounding variables. For further analysis, we fitted three general linear models to check the correlation between gender and productivity:
 
 \begin{equation}
 \label{eqn:m1.2}
@@ -123,7 +131,7 @@ y_{salary} = X\beta_{gender}  + \epsilon
 y_{salary} = X\beta_{productivity}  + \epsilon 
 \end{equation}
 
-According to \ref{eqn:m1.2}, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). \ref{eqn:m1.4} indicates a negative correlation between productivity score and salary level. Together, this means productivity is a confounding variable between gender and productivity. 
+According to \ref{eqn:m1.2}, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). \ref{eqn:m1.4} indicates a negative correlation between productivity score and salary level, or one unit increase in productivity leads to a decrease of 44.73 in salary. Both correlations are significant at the 0.05 level, suggesting that productivity is a significant confounding variable between gender and salary.  
 
 ```{r, include=FALSE}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
@@ -133,7 +141,7 @@ According to \ref{eqn:m1.2}, the average productivity of female employees is 1.4
 current <- current %>% filter(gender != "Prefer not to say")
 model1.1 <- lmer(salary ~ gender + seniority + quarter + (1|productivity) + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
 summary(model1.1)
-# confint(model1.1)
+#confint(model1.1)
 ```
 
 
