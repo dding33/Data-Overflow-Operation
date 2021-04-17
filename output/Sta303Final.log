@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2021.3.29)  17 APR 2021 08:28
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2021.3.29)  17 APR 2021 08:41
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1001,22 +1001,22 @@ File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [3] [4]
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 409.
+(caption)                particular \caption on input line 411.
 See the caption package documentation for explanation.
 
 
-LaTeX Warning: Reference `##eq:logistic' on page 5 undefined on input line 462.
+LaTeX Warning: Reference `##eq:logistic' on page 5 undefined on input line 464.
 
 
 [5]
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 477.
+(caption)                particular \caption on input line 479.
 See the caption package documentation for explanation.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 502.
+(caption)                particular \caption on input line 504.
 See the caption package documentation for explanation.
 
 [6]
@@ -1026,7 +1026,7 @@ File: Sta303Final_files/figure-latex/gender-promotion-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/gender-promotion-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/gender-promotion-1.pdf 
- used on input line 536.
+ used on input line 538.
 (pdftex.def)             Requested size: 455.26903pt x 312.12767pt.
 [7]
 <Sta303Final_files/figure-latex/gender salary-1.pdf, id=94, 453.695pt x 497.86p
@@ -1035,14 +1035,14 @@ File: Sta303Final_files/figure-latex/gender salary-1.pdf Graphic file (type pdf
 )
 <use Sta303Final_files/figure-latex/gender salary-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/gender salary-1.pdf  us
-ed on input line 561.
+ed on input line 563.
 (pdftex.def)             Requested size: 453.6939pt x 497.85878pt.
 [8 <./Sta303Final_files/figure-latex/gender-promotion-1.pdf>]
 <Sta303Final_files/figure-latex/fig1-1.pdf, id=109, 453.695pt x 317.185pt>
 File: Sta303Final_files/figure-latex/fig1-1.pdf Graphic file (type pdf)
 <use Sta303Final_files/figure-latex/fig1-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/fig1-1.pdf  used on inp
-ut line 570.
+ut line 572.
 (pdftex.def)             Requested size: 453.6939pt x 317.1842pt.
 [9 <./Sta303Final_files/figure-latex/gender salary-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-12-1.pdf, id=124, 453.695pt x 317
@@ -1051,7 +1051,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-12-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-12-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-12-1.pdf 
- used on input line 579.
+ used on input line 581.
 (pdftex.def)             Requested size: 453.6939pt x 317.1842pt.
 [10 <./Sta303Final_files/figure-latex/fig1-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-13-1.pdf, id=137, 453.695pt x 317
@@ -1060,7 +1060,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-13-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-13-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-13-1.pdf 
- used on input line 588.
+ used on input line 590.
 (pdftex.def)             Requested size: 453.6939pt x 317.1842pt.
 [11 <./Sta303Final_files/figure-latex/unnamed-chunk-12-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-14-1.pdf, id=151, 453.695pt x 320
@@ -1069,7 +1069,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-14-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-14-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-14-1.pdf 
- used on input line 594.
+ used on input line 596.
 (pdftex.def)             Requested size: 453.6939pt x 320.19545pt.
 [12 <./Sta303Final_files/figure-latex/unnamed-chunk-13-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-15-1.pdf, id=164, 453.695pt x 320
@@ -1078,7 +1078,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-15-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-15-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-15-1.pdf 
- used on input line 601.
+ used on input line 603.
 (pdftex.def)             Requested size: 453.6939pt x 320.19545pt.
 [13 <./Sta303Final_files/figure-latex/unnamed-chunk-14-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-16-1.pdf, id=178, 453.695pt x 320
@@ -1087,7 +1087,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-16-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-16-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-16-1.pdf 
- used on input line 608.
+ used on input line 610.
 (pdftex.def)             Requested size: 453.6939pt x 320.19545pt.
 [14 <./Sta303Final_files/figure-latex/unnamed-chunk-15-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-17-1.pdf, id=191, 453.695pt x 320
@@ -1096,7 +1096,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-17-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-17-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-17-1.pdf 
- used on input line 615.
+ used on input line 617.
 (pdftex.def)             Requested size: 453.6939pt x 320.19545pt.
 [15 <./Sta303Final_files/figure-latex/unnamed-chunk-16-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-18-1.pdf, id=204, 453.695pt x 322
@@ -1105,7 +1105,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-18-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-18-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-18-1.pdf 
- used on input line 622.
+ used on input line 624.
 (pdftex.def)             Requested size: 453.6939pt x 322.20296pt.
 [16 <./Sta303Final_files/figure-latex/unnamed-chunk-17-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-19-1.pdf, id=217, 453.695pt x 322
@@ -1114,7 +1114,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-19-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-19-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-19-1.pdf 
- used on input line 628.
+ used on input line 630.
 (pdftex.def)             Requested size: 453.6939pt x 322.20296pt.
 [17 <./Sta303Final_files/figure-latex/unnamed-chunk-18-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-20-1.pdf, id=230, 453.695pt x 322
@@ -1123,7 +1123,7 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-20-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-20-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-20-1.pdf 
- used on input line 634.
+ used on input line 636.
 (pdftex.def)             Requested size: 453.6939pt x 322.20296pt.
 [18 <./Sta303Final_files/figure-latex/unnamed-chunk-19-1.pdf>]
 <Sta303Final_files/figure-latex/unnamed-chunk-21-1.pdf, id=243, 457.71pt x 315.
@@ -1132,21 +1132,21 @@ File: Sta303Final_files/figure-latex/unnamed-chunk-21-1.pdf Graphic file (type
 pdf)
 <use Sta303Final_files/figure-latex/unnamed-chunk-21-1.pdf>
 Package pdftex.def Info: Sta303Final_files/figure-latex/unnamed-chunk-21-1.pdf 
- used on input line 640.
+ used on input line 642.
 (pdftex.def)             Requested size: 455.26445pt x 313.4935pt.
 [19 <./Sta303Final_files/figure-latex/unnamed-chunk-20-1.pdf>]
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 6
-44.
+46.
 (/Users/dingding2017/Library/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 <images/writing_hired.png, id=257, 2195.20125pt x 1356.06625pt>
 File: images/writing_hired.png Graphic file (type png)
 <use images/writing_hired.png>
-Package pdftex.def Info: images/writing_hired.png  used on input line 656.
+Package pdftex.def Info: images/writing_hired.png  used on input line 658.
 (pdftex.def)             Requested size: 455.24455pt x 281.22331pt.
 
-Overfull \hbox (10.95038pt too wide) in paragraph at lines 656--657
+Overfull \hbox (10.95038pt too wide) in paragraph at lines 658--659
 [] 
  []
 
@@ -1159,7 +1159,7 @@ LaTeX Warning: There were undefined references.
 Here is how much of TeX's memory you used:
  19316 strings out of 480962
  382012 string characters out of 5906255
- 896867 words of memory out of 5000000
+ 895867 words of memory out of 5000000
  36125 multiletter control sequences out of 15000+600000
  455581 words of font info for 59 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -1182,7 +1182,7 @@ m/lmss12.pfb></Users/dingding2017/Library/TinyTeX/texmf-dist/fonts/type1/public
 blic/lm/lmsy10.pfb></Users/dingding2017/Library/TinyTeX/texmf-dist/fonts/type1/
 public/lm/lmsy8.pfb></Users/dingding2017/Library/TinyTeX/texmf-dist/fonts/type1
 /public/lm/lmtt10.pfb>
-Output written on Sta303Final.pdf (22 pages, 649694 bytes).
+Output written on Sta303Final.pdf (22 pages, 649755 bytes).
 PDF statistics:
  398 PDF objects out of 1000 (max. 8388607)
  317 compressed objects within 4 object streams

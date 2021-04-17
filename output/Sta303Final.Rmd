@@ -69,7 +69,7 @@ In our opinion, the system is fair during each of the three process, in accordan
 
 ## Introduction
 
-We use a combination of model buliding and data visualization to prove our conclusion that there is no bias on personal traits in the company's hiring and enumeration processes. In the following report, 'the company' refers to the BlackSaber Software and 'we' refers to the analysts from Data Over Flow. With no special notes, the assumed level of significance in this report is $\alpha=0.05$.
+We assess the existence of bias from 3 aspects, salary levels, hiring decisions and promotion. We use a combination of model buliding and data visualization to prove our conclusion that there is no bias on personal traits in the company's hiring and enumeration processes. In the following report, 'the company' refers to the BlackSaber Software and 'we' refers to the analysts from Data Over Flow. With no special notes, the assumed level of significance in this report is $\alpha=0.05$.
 
 ### Research questions
 
