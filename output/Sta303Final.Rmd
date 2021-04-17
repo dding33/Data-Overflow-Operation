@@ -133,17 +133,16 @@ y_{salary} = X\beta_{productivity}  + \epsilon
 
 According to \ref{eqn:m1.2}, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). \ref{eqn:m1.4} indicates a negative correlation between productivity score and salary level, or one unit increase in productivity leads to a decrease of 44.73 in salary. Both correlations are significant at the 0.05 level, suggesting that productivity is a significant confounding variable between gender and salary.  
 
-```{r, include=FALSE}
+```{r,include=FALSE}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
 # Removed "Prefer not to say" from gender since it doesn't provide additional information
-# fixed effect: gender, seniority, quarter 
-# random effect: team, leadership, productivity 
+# fixed effect: gender, seniority, quarter, productivity
+# random effect: team, leadership, employee id
 current <- current %>% filter(gender != "Prefer not to say")
-model1.1 <- lmer(salary ~ gender + seniority + quarter + (1|productivity) + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
+model1.1 <- lmer(salary ~ gender + seniority + quarter + productivity + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
 summary(model1.1)
-#confint(model1.1)
+confint(model1.1)
 ```
-
 
 ```{r, include = FALSE}
 # there exists correlation between gender and productivity according to the data given
@@ -171,15 +170,16 @@ summary(model1.4)
 ```{r, include=FALSE}
 # The reduced model from the main model - this can be the final model I think
 # Tried seniority, gender, quarter, employeeid, team, productivity for level from the predictors and the reduced model has a worse performance comparing to the full model
-# Tried removing leadership_for_level and the reduced model had a better performance comparing to the original, therefore, it is not necessary to include this predictor into the model
+# Tried removing leadership_for_level and productivity - the reduced model had a better performance comparing to the original, therefore, it is not necessary to include this predictor into the model
 
-model1.5 <- lmer(salary ~ gender + seniority + quarter + (1|team) + (1|productivity) + (1|employee_id), data = current)
+model1.5 <- lmer(salary ~ gender + seniority + quarter + (1|team) + (1|employee_id), data = current)
 summary(model1.5)
 #confint(model1.5)
 
 # Likelihood ratio test comparing the two models, small p value indicating the second model is better
 lmtest::lrtest(model1.1, model1.5)
 ```
+
 
 ## Does there exist bias in the hiring process?
 
@@ -274,6 +274,12 @@ promotion %>% ggplot(aes(x = gender, y = promotion)) + geom_boxplot()
 model3.1 <- glm(promotion ~ gender, data = promotion)
 kable(tidy(model3.1))
 summary(model3.1)
+```
+
+```{r, include=FALSE}
+model3.2 <- glm(promotion ~ gender + avg_productivity, data = promotion)
+kable(tidy(model3.2))
+summary(model3.2)
 ```
 
 In order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees.

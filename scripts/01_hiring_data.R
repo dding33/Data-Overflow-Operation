@@ -33,7 +33,10 @@ black_saber_current_employees$salary <- as.numeric(gsub('[$,]','',black_saber_cu
 black_saber_current_employees<- black_saber_current_employees %>% mutate(quarter = as.character(ifelse(StrRight(financial_q, 1) == '1', '1',
                                                                                           ifelse(StrRight(financial_q, 1) == '2',
                                                                                                  '2', ifelse(StrRight(financial_q, 1) == '3', 
-                                                                                                           '3', ifelse(StrRight(financial_q, 1) == '4', '4', financial_q))))))
+                                                                                                             '3', ifelse(StrRight(financial_q, 1) == '4', '4', financial_q))))))
+# Add a financial year variable indicating the financial year but not the quarters
+black_saber_current_employees<- black_saber_current_employees %>% mutate(year = as.numeric(StrLeft(financial_q, 4)))
+
 # Combined a few job seniority levels, ie. combined entry-level, junior I II III into junior, senior I II III into senior
 black_saber_current_employees<- black_saber_current_employees %>% mutate(seniority = ifelse(role_seniority == 'Entry-level' | StrLeft(role_seniority, 6) 
                                                                                            == 'Junior', 'Junior', ifelse(StrLeft(role_seniority, 6) == 'Senior',
@@ -47,6 +50,11 @@ promotion <- promotion %>% group_by(employee_id) %>% mutate(promotion =n_distinc
 promotion <- merge(current, promotion, by = "employee_id", all.x = TRUE)
 promotion <- promotion %>% select(employee_id, gender, promotion) %>% filter(gender != "Prefer not to say")
 promotion <- unique(promotion)
+
+# Calculate average productivity score for each employee
+temp_promotion <- current %>% select(employee_id, productivity) %>% group_by(employee_id) %>% summarise_at(vars(productivity),
+                                                                                         list(avg_productivity = mean))
+promotion <- inner_join(promotion, temp_promotion, by = "employee_id")
 
 # Hiring Data
 
