@@ -59,16 +59,29 @@ As requested from your side, we have formed a team of three experienced analysts
 
 The key findings are:
 
-- Even though there exists differences between the average salaries of male and female employees, the difference is not evidence of gender bias because multiple variables act as significant confounding variables between gender and salary. For example, men on average have higher seniority levels and hence are compensated with higher salary based on this higher added-value to the company. 
-
-
+- Even though there exists differences between the average salaries of male and female employees, the difference is not evidence of gender bias because multiple variables act as significant confounding variables between gender and salary. 
 - Among the three phases of recruitments, the chance of successfully landing the job is mostly dependent on other variables such as gpa and work experience. Gender is not found as a significant predicting variable for the chance of success during any of these phases. In other words, candidates with stronger background, talent and potential are selected, regardless of gender. 
-
 - The chances of being promoted is higher for male employees than for female employees, however (...)
 
+The difference of salary shown in Figure(x) is due to factors other than gender. For example, men on average have higher seniority levels and hence are compensated with higher salary based on this higher added-value to the company. Candidates hired have a much higher gpa than those who did not get hired, as shown in Figure(x). 
+
+```{r gender-salary, fig.cap="Salary Distribution for Men and Women in Each Quarter", fig.align='center', fig.height=7, fig.width=5}
+#edit axis label (name)
+salary_by_gender_q1 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q2 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q3 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+salary_by_gender_q4 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+gender_salary <- plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
+gender_salary
+```
+
+```{r, fig.cap="GPA Distribtion Across Hiring Results", fig.align='center', fig.height=5, fig.width=5}
+gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()+
+  xlab("hiring results")
+gpa_if_hired
+```
+
 Based on our findings, we believe that the company is fair in terms of salary distributions for male and female employees. The hiring process empowered by the AI system is also recruiting the best talent without biasing on any gender. The promotion process is also determined by personal ability and contribution to the company. Any individual salary, promotion or hiring decision is made fairly based on non-gender and ability-related parameters only. Overall, Black Saber Software acts in accordance with the Ontario's Human Rights Code and Black Saber's policies.
-
-
 
 \newpage
 # Technical report
@@ -142,7 +155,7 @@ According to \ref{eqn:m1.2}, the average productivity of female employees is 1.4
 current <- current %>% filter(gender != "Prefer not to say")
 model1.1 <- lmer(salary ~ gender + seniority + quarter + productivity + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
 summary(model1.1)
-confint(model1.1)
+#confint(model1.1)
 ```
 
 ```{r, include = FALSE}
@@ -284,7 +297,7 @@ summary(model3.2)
 
 For the third research question, in order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees. We counted the number of times each employee got promoted and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because that is only 11 out of 608 employees. Figure 1 indicates the number of times being promoted across male and female employees. We observed that the median of promotion times for male is higher than the median for females: 1 for males and 0 for females. The employee being promoted the most is a male who got promoted 7 times. 
 
-We fitted a general linear model on the promotion data set using gender as a predictor for the number of times being promoted. The result indicates that female employees is promoted less than male employees, however(...)
+We then explored the length of employeement of individuals and find that the number of times an employee gets promoted is related to the length of employeement(which is correlated with gender). Therefore 
 
 ## Data Visualization
 
@@ -409,9 +422,9 @@ phase1_new_applicants %>% ggplot(aes(x = as.character(gender), y = gpa)) + geom_
 
 
 ```{r, fig.cap="GPA Distribtion Across Hiring Results"}
-# gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()+
+gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()+
   xlab("hiring results")
-# gpa_if_hired
+gpa_if_hired
 ```
 
 ```{r, fig.cap="GPA Distribution Across Phase1 Results"}
@@ -432,7 +445,6 @@ phase1_new_applicants %>% ggplot(aes(x = as.character(gender), y = gpa)) + geom_
   # xlab("phase2 results")+ylab("speaking skills score")
 ```
 
-### Writing Skills VS if hired
 ```{r, fig.cap="Writing Skills Score Across Hiring Results"}
 # phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()+
   # xlab("hiring results")+ylab("writing skills score")
