@@ -199,7 +199,7 @@ According to \ref{eqn:m1.2}, the average productivity of female employees is 1.4
 # fixed effect: gender, seniority, quarter, productivity
 # random effect: team, leadership, employee id
 current <- current %>% filter(gender != "Prefer not to say")
-model1.1 <- lmer(salary ~ gender + seniority + quarter + productivity + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
+model1.1 <- lmer(salary ~ gender + seniority + year + quarter + productivity + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
 summary(model1.1)
 #confint(model1.1)
 ```
@@ -227,12 +227,12 @@ kable(tidy(model1.4))
 summary(model1.4)
 ```
 
-```{r, include=FALSE}
+```{r}
 # The reduced model from the main model - this can be the final model I think
-# Tried seniority, gender, quarter, employeeid, team, productivity for level from the predictors and the reduced model has a worse performance comparing to the full model
-# Tried removing leadership_for_level and productivity - the reduced model had a better performance comparing to the original, therefore, it is not necessary to include this predictor into the model
+# Tried seniority, gender, quarter, employeeid, year, team, productivity for level from the predictors and the reduced model has a worse performance comparing to the full model
+# Tried removing leadership_for_level  - the reduced model had a better performance comparing to the original, therefore, it is not necessary to include this predictor into the model
 
-model1.5 <- lmer(salary ~ gender + seniority + quarter + (1|team) + (1|employee_id), data = current)
+model1.5 <- lmer(salary ~ gender + seniority + year + quarter + productivity + (1|employee_id) + (1|team), data = current)
 summary(model1.5)
 #confint(model1.5)
 
