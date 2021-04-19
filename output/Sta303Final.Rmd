@@ -1,6 +1,6 @@
 ---
-title: "Potential Bias Analysis in Human Resource System"
-author: "Report prepared for Black Saber Software by Data OverFlow"
+title: "Gender Bias Analysis in Human Resource System"
+author: "Report Prepared for Black Saber Software by Data OverFlow Operation"
 date: '2021-04-21'
 output:
   pdf_document:
@@ -55,32 +55,34 @@ phase3_new_applicants <- read_csv("clean/phase3_new.csv")
 \newpage
 # Executive summary
 
-We, Data Overflow Operation, have carefully examined the structure of the human resource system of your company, Black Saber Software, by analyzing the provided data on the hiring, promotion and salary information. Our research questions focus on each of these three processes and whether gender bias exists in any of the processes. Our examination yielded the final conclusion that that the hiring process is fair and based on talent and value to the company but the salary and promotion processes reveals potential gender bias. 
+We, Data Overflow Operation, have carefully examined the structure of the human resource system of your company, Black Saber Software, by analyzing the provided data on hiring, promotion and salary information. Our research questions focus on each of these three processes and whether gender bias exists in any of the processes. Our examination yielded the final conclusion that that the hiring process is fair and based on talent and value to the company, but the salary and promotion processes reveals potential gender bias. 
 
 The key findings are:
 
-- Based on the provided data and after controlling for all necessary confounding variables, the difference between the average salaries of male and female employees remain significant with females on average earning 3428 dollars less than males. 
+- After controlling for all necessary confounding variables, the difference between the average salaries of male and female employees remain significant with females on average earning 3428 dollars less than males. 
 
-- Among the three phases of recruitments involving the AI system, the chance of passing is determined by skill-related variables such as gpa and technical skills. Gender is not a significant indicator for passing each phase or getting hired. Candidates with stronger background, talent and potential are selected regardless of gender. 
+- Among all three phases of recruitments involving the AI system, gender is not a significant indicator for passing each phase or getting hired. Candidates with stronger background, talent and potential are selected regardless of gender. 
 
-- There is a positive relationship between the number of times being promoted and the length of service.  
+- With adjustments on the number of years worked at the company, the average rate of promotion for females is lower, at 0.7 of the average rate of promotion for men. 
 
-Several visualizations are shown here to provide some basic information about the data. As shown by the table below, the median salary for men is 42,400, which exceeds the median salary for women, which is 40,000. However, we observe that while men and women have a similar percentage of appropriate leadership for level, 6.6% of men exceed expection and 0% needs improvement. On the other hand, 0% of women exceeds expectation and 5.2% needs improvement. It may appear that men on average have greater contribution and are thus compensated higher, which we will explore closely. 
-
-```{r, fig.cap="Leadership by gender"}
+```{r, fig.cap="Salary by gender",include=FALSE}
 tb1 <- current%>%
-  select(salary,leadership_for_level,gender)%>%
+  select(salary,gender)%>%
   tbl_summary(by=gender)%>%
   modify_header(label ~ "**Variable**")
 
-tb1 %>% modify_caption("**Leadership by gender**")
+tb1 %>% modify_caption("**Salary by gender**")
 ```
+The overall median salary for men is 42,400, exceeding the median salary for women, which is 40,000. The plots below show that the salary for men is higher than female across all but the HR team, which is consistent across time. However, there exists many factors influencing gender and salary simultanerously,including role seniority and leadership. For example, we found that men are more likely to be in higher seniority positions with higher leadership ratings. Thus, they may be compensated higher based on higher value and contribution to the company, which is not any gender bias. However, later analysis will show that the salary gap exists even after taking all these factors into consideration. 
 
-Moreover, the difference of salary by gender may be explained by varying role seniority. On average, there are more men with higher positions than women. Since it is expected that higher positions receive higher salaries, this reasonability brings up the average male salary as compared to female. We find that the salary for men is consistently higher than female no matter the financial quarter. Similarly, the salary for men is consistently higher than female no matter the team, beside the HR team where women on average earn higher. All of these potential influencers will be taken into consideration when determining the direct relationship between gender and salary. 
-
-Moving on to the hiring process, we conducted our analysis by going through each phase and test for potential gender bias. As shown by the table below, we noticed that the male and female candidates had similar skills coming in, which includes GPA and writing/technical/speaking skills. We found that the candidates who got hired have much better skills (higher GPA and skills) than ones who did not. This is expected as the AI system selected the candidates with stronger backgrounds and potential. Gender is not a significant indicator on whether the candidate passes for any of the three phases, suggesting that the AI system is fair. 
-
-
+```{r, fig.align='center', fig.cap="Most recent salary distribution across teams, by gender", out.height="70%", out.width="70%"}
+current %>% filter(financial_q=="2020 Q4") %>% filter(gender != "Prefer not to say") %>% 
+  ggplot(aes(x=gender, y=salary, col=gender))+
+  geom_boxplot()+
+  facet_wrap(~team, nrow=2)+
+  theme_light()
+```
+Moving on to the hiring process, we conducted our analysis by going through each phase and test for gender bias. As shown below, we noticed that the male and female candidates had similar skill levels coming in, but the candidates who got hired have much better skills (higher GPA and skill scores) than ones who did not. Analysis suggests that the AI system selected candidates with stronger backgrounds and potential, unbiased by gender. 
 ```{r}
 tb2 <- phase1_new_applicants%>%
   select(gpa,gender)%>%
@@ -89,23 +91,21 @@ tb2 <- phase1_new_applicants%>%
 tb2 %>% modify_caption("Gpa and gender distribution")
 ```
 
-```{r}
+```{r,include=FALSE}
 tb3 <- phase2_new_applicants%>%
   select(technical_skills,writing_skills,speaking_skills,gender)%>%
   tbl_summary(by=gender)%>%
   modify_header(label ~ "**Variable**")
 tb3 %>% modify_caption("Skills score and gender")
 ```
-We manipulated the given data and extracted promotion information of the current employees. As shown below, we find that men tend to have more promotions then women controlling for confounding variables. One important variable is the number of years the employee has worked for the company (indicated by service length). Even after controlling for the rate of promotion, we found gender to be significant in determining promotions and that the rate of promotions is lower, at 0.7 times that of men. 
+Moreover, we extracted promotion information from the current employees dataset. On average, men tend to have more promotions then women. Even after adjusting for the number of years the employee has worked at the company, we found gender to be significant in determining the rate of promotions, which for women is only 0.7 times that of men. 
 
-```{r promotion-service times, fig.cap="Number of promotions against service length", fig.height=4, out.height="65%", out.width="65%", fig.align='center'}
+```{r promotion-service times, fig.cap="Number of promotions against service length", fig.height=4, out.height="65%", out.width="65%", fig.align='center',include=FALSE}
 promotion %>% ggplot(aes(x=service_length, y= num_promotion, col=gender))+
   geom_point()+xlab("service length")+ylab("number of promotions")+
   theme_light()
 ```
-
-
-Based on our findings, we believe that the company is fair in terms of the hiring process but shows gender bias in the salary and promotion processes. Controlling for many factors, candidates with higher value are hired to the company, but current female employees earn less than male employees and receive fewer promotions than male employees. We will go through with greater details how we obtained the above findings in the report below. 
+Based on our findings, we believe that the company is fair in terms of the hiring process but exhibits gender bias in the salary and promotion processes. Controlling for many factors, candidates with higher value are hired to the company, but current female employees earn less than male employees and receive lower promotion rates than male employees. We will go through with greater details how we obtained the above findings in the report below. 
 
 
 \newpage
