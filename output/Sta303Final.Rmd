@@ -1,6 +1,6 @@
 ---
 title: "Potential Bias Analysis in Human Resource System"
-author: "Report prepared for Black Saber Software by Data Over Flow"
+author: "Report prepared for Black Saber Software by Data OverFlow"
 date: '2021-04-21'
 output:
   pdf_document:
@@ -14,7 +14,7 @@ output:
     df_print: paged
     toc: yes
     toc_depth: '2'
-subtitle: "-for Blacksaber Software in 2021"
+subtitle: "-for Black Saber Software in 2021"
 thanks: "Codes are available at: https://github.com/dding33/Data-Overflow-Operation by request."
 lang: en
 titlepage: yes
@@ -55,17 +55,17 @@ phase3_new_applicants <- read_csv("clean/phase3_new.csv")
 \newpage
 # Executive summary
 
-We examined the structure of the human resource system of your company by analyzing the provided data on the hiring, promotion and salary information. Our examination yielded the final conclusion that that the hiring and remuneration processes are fair and based on talent and value to the company. 
+We, Data Overflow Operation, have carefully examined the structure of the human resource system of your company, Black Saber Software, by analyzing the provided data on the hiring, promotion and salary information. Our research questions focus on each of these three processes and whether gender bias exists in any of the processes. Our examination yielded the final conclusion that that the hiring process is fair and based on talent and value to the company but the salary and promotion processes reveals potential gender bias. 
 
 The key findings are:
 
-- Even though there exists differences between the average salaries of male and female employees, the difference is not evidence of gender bias because multiple variables act as significant confounding variables between gender and salary. 
+- Based on the provided data and after controlling for all necessary confounding variables, the difference between the average salaries of male and female employees remain significant with females on average earning 3428 dollars less than males. 
 
-- Among the three phases of recruitments, the chance of successfully landing the job is mostly dependent on other variables such as gpa and work experience. Gender is not found as a significant predicting variable for the chance of success during any of these phases. In other words, candidates with stronger background, talent and potential are selected, regardless of gender. 
+- Among the three phases of recruitments involving the AI system, the chance of passing is determined by skill-related variables such as gpa and technical skills. Gender is not a significant indicator for passing each phase or getting hired. Candidates with stronger background, talent and potential are selected regardless of gender. 
 
 - There is a positive relationship between the number of times being promoted and the length of service.  
 
-As shown by the table below, the median salary for men is 42,400, which exceeds the median salary for women which is 40,000. However, we observe that while men and women have a similar percentage of appropriate leadership for level, 6.6% of men exceed expection and 0% needs improvement. On the other hand, 0% of women exceeds expectation and 5.2% needs improvement. Hence, men on average have greater contribution and are likely compensated higher for appropriate reasons.
+Several visualizations are shown here to provide some basic information about the data. As shown by the table below, the median salary for men is 42,400, which exceeds the median salary for women, which is 40,000. However, we observe that while men and women have a similar percentage of appropriate leadership for level, 6.6% of men exceed expection and 0% needs improvement. On the other hand, 0% of women exceeds expectation and 5.2% needs improvement. It may appear that men on average have greater contribution and are thus compensated higher, which we will explore closely. 
 
 ```{r, fig.cap="Leadership by gender"}
 tb1 <- current%>%
@@ -76,11 +76,10 @@ tb1 <- current%>%
 tb1 %>% modify_caption("**Leadership by gender**")
 ```
 
-Moreover, the difference of salary by gender can also be explained by varying role seniority. On average, there are more men with higher positions than womeN. Since it is expected that higher positions receive hiher salaries, this reasonability brings up the average male salary as compared to female. 
+Moreover, the difference of salary by gender may be explained by varying role seniority. On average, there are more men with higher positions than women. Since it is expected that higher positions receive higher salaries, this reasonability brings up the average male salary as compared to female. We find that the salary for men is consistently higher than female no matter the financial quarter. Similarly, the salary for men is consistently higher than female no matter the team, beside the HR team where women on average earn higher. All of these potential influencers will be taken into consideration when determining the direct relationship between gender and salary. 
 
-Salary for men is consistently higher than female no matter the financial quarter. Both the median and interquantile range appears to be shifted higher for men. Moreover, we notice that there is no significant increase of salary in Q4 where potentially bonuses are given. 
+Moving on to the hiring process, we conducted our analysis by going through each phase and test for potential gender bias. As shown by the table below, we noticed that the male and female candidates had similar skills coming in, which includes GPA and writing/technical/speaking skills. We found that the candidates who got hired have much better skills (higher GPA and skills) than ones who did not. This is expected as the AI system selected the candidates with stronger backgrounds and potential. Gender is not a significant indicator on whether the candidate passes for any of the three phases, suggesting that the AI system is fair. 
 
-Moving on to the hiring process, we find that the male and female candidates had similar levels of GPA coming in. However, the candidates who got hired have a much higher gpa than those who did not, which is reasonable and unrelated to gender. The same analysis is found for writing, speaking, and technical skills, where the plot for technical skills is shown as representation.
 
 ```{r}
 tb2 <- phase1_new_applicants%>%
@@ -97,8 +96,17 @@ tb3 <- phase2_new_applicants%>%
   modify_header(label ~ "**Variable**")
 tb3 %>% modify_caption("Skills score and gender")
 ```
+We manipulated the given data and extracted promotion information of the current employees. As shown below, we find that men tend to have more promotions then women controlling for confounding variables. One important variable is the number of years the employee has worked for the company (indicated by service length). Even after controlling for the rate of promotion, we found gender to be significant in determining promotions and that the rate of promotions is lower, at 0.7 times that of men. 
 
-Based on our findings, we believe that the company is fair in terms of salary distributions for male and female employees. The hiring process empowered by the AI system is also recruiting the best talent without biasing on any gender. The promotion process is also determined by personal ability and contribution to the company. Any individual salary, promotion or hiring decision is made fairly based on non-gender and ability-related parameters only. Overall, Black Saber Software acts in accordance with the Ontario's Human Rights Code and Black Saber's policies.
+```{r promotion-service times, fig.cap="Number of promotions against service length", fig.height=4, out.height="65%", out.width="65%", fig.align='center'}
+promotion %>% ggplot(aes(x=service_length, y= num_promotion, col=gender))+
+  geom_point()+xlab("service length")+ylab("number of promotions")+
+  theme_light()
+```
+
+
+Based on our findings, we believe that the company is fair in terms of the hiring process but shows gender bias in the salary and promotion processes. Controlling for many factors, candidates with higher value are hired to the company, but current female employees earn less than male employees and receive fewer promotions than male employees. We will go through with greater details how we obtained the above findings in the report below. 
+
 
 \newpage
 # Technical report
@@ -115,9 +123,9 @@ The three main research questions of the analysis are as follows:
 * Is there a gender bias during the hiring processes of the company? 
 * Is there a gender bias in the promotion possibilities within the company? 
 
-## Does there exist bias in current employee renumeration?
+## Does there exist gender bias in current employee renumeration?
 
-In order to analyze whether gender bias exists in the current employee renumeration, we fitted a linear mixed model as well as two general linear models on the dataset containing all current employees at the Black Saber Software. The dataset contains 6909 observations of 9 variables, including all 608 current employees of the Black Saber Software. Each observation records the information of a specific employee at a specific time (a given quarter in a given year). Based on data visualization outputs, the differences between different levels of juniors and seniors are not significant, thus we combined the positions 'Entry-level', 'Junior I', 'Junior II' and 'Junior III' into one category of 'Junior' and combined 'Senior I', 'Senior II', 'Senior III' into another category 'Senior'. 
+In order to analyze whether gender bias exists in the current employee renumeration, we fitted a linear mixed model as well as two general linear models on the dataset containing all current employees at the Black Saber Software. The dataset contains 6909 observations of 9 variables, including all 608 current employees of the Black Saber Software. We removed 117 observations where the employee preferred not to disclose their gender since these data does not offer valuable information to our analysis. Each observation records the corresponding information of a specific employee at a specific time (a given quarter in a given year). Based on data visualization outputs, the differences between different levels of juniors and seniors are not significant, thus we combined the positions 'Entry-level', 'Junior I', 'Junior II' and 'Junior III' into one category of 'Junior' and combined 'Senior I', 'Senior II', 'Senior III' into another category 'Senior'. 
 
 We consider salary as the key variable to measure employee renumaration and hence used it as the response varible. We want to assess whether an employee's salary is affected by his/her gender in order to detect the existence of bias. On top of that, we included other non-personal variables such as team information, financial quater of the year and seniority of level which are key factors of salary level to reduce potential omitted variable bias between gender and salary. To incorporate both the fixed effects and the random effects of variables on the remployee renumaration, we introduced the following linear mixed model:
 
@@ -125,26 +133,33 @@ We consider salary as the key variable to measure employee renumaration and henc
 y = X\beta + Zu + \epsilon 
 \end{equation}
 
-Linear mixed model considers the response variable y as a vector of observations with $E(y)=X\beta$. $\beta$ is an unknown vector for the fixed effects and u is an unknown vector for the random effects. This model is appropriate when non-independence exists in the data. In our initial model, we consider gender, seniority, productivity, and the financial quarter as fixed effects. This is because we are interested in also observing each of these predictors' influence on salary. We treat team and leadership for level as random effects. This is because we are less interested in their effects on salary but we want to include them in the model to reduce influence caused by various groupings/levels. Note that random effects are included to work with multiple levels of correlated data. This allows the model to account for both the variability within random effect groups as well as between those groups, which is crucial because our data covers information across various time intervals and hierarchical corporate structure. 
+Linear mixed model considers the response variable y as a vector of observations with $E(y)=X\beta$. $\beta$ is an unknown vector for the fixed effects and u is an unknown vector for the random effects. This model is appropriate when non-independence exists in the data. In our initial model, we consider gender, role seniority, productivity, and the financial quarter as fixed effects. This is because we are interested in also observing each of these predictors' influence on salary. We treat team and leadership for level as random effects. This is because we are less interested in their effects on salary but we want to include them in the model to reduce influence caused by various groupings/levels. To account for quarterly differences and potential increase in salary due to inflation or deflation in the general industry, we created two variables: quarter that indicates the given quarter and year that indicates the given year. Note that random effects are included to work with multiple levels of correlated data. This allows the model to account for both the variability within random effect groups as well as between those groups, which is crucial because our data covers information across various time intervals and hierarchical corporate structure. We have also tested for random slopes but found the results insignificant and overly complicate our model. 
 
-Given that our full model uses all factors, we tried to reduce the number of predictors to find the simplest model that incorporates all the relevant information. We first noticed that productivity is not a significant predictor in our full model, hence it is removed. Then, by attempting to drop predictors one by one and conducting likelihood ratio tests, we found that all other predictors beside "leadership" are significant. Thus, our final model dropped productivity and leadership_for_level as predictors and included all other predictors. The final model gives the following results:
+Given that our full model uses all factors, we tried to reduce the number of predictors to find the simplest model that incorporates all the relevant information. Based on confidence interval intrepretations, we find that gender, role seniority, year, quarter and productivity are all significant predictors for salary. We attempted dropping predictors (including random effects) one by one and conducting likelihood ratio tests. We found that all other predictors besides leadership are significant. Hence, our final model included all othre predictors besides leadership.The final model gives the following results:
 
 \begin{center}
 \captionof{table}{Statistics Summary for Reduced Salary Model}
 \begin{tabular}{|l|l|l|}
 \hline
 Variable & $\hat{\beta}$ & Std. Error \\ \hline
-intercept & 116904.03 & 709.18 \\ \hline
-women & -2928.38 & 426.88 \\ \hline
-junior & -79703.19 & 342.56 \\ \hline
-manager & -50342.84 & 311.51\\ \hline
-senior & -69910.72 & 323.8 \\ \hline
-vice-president & 30024.17 & 498.25\\ \hline
-quarter & 74.31 & 28.28 \\ \hline
+intercept & -2620956 & 50707.6 \\ \hline
+women & -3428.299 & 611.0878 \\ \hline
+junior & -70694.34 & 324.8482 \\ \hline
+manager & -47895.55 & 258.1007 \\ \hline
+senior & -64307.94 & 285.3001 \\ \hline
+vice-president & 27747.96 & 409.2851\\ \hline
+year & 1352.881 & 25.05654 \\ \hline
+quarter & 268.4411 & 23.30894 \\ \hline
+productivity & -26.40428 & 2.453329 \\ \hline
+
 \end{tabular}
 \end{center}
 
-Under this model, we predict a positive and statistically significant correlation between seniority level and salary. Given the baseline group as directors, it is reasonable to see any positions below director receives lower salaries and any positions above director receives higher salaries. There appears to be a difference between average salaries of males and females. More specifically holding all else constant, being female reduces the salary by 2953.78 on average. Prior to this model, we also considered the naive model that simply regresses gender on salary without controlling for any variables. The effect found was that being women reduces one's salary by 2680.4. We see that this difference is larger now after eliminating many confounding variables. For further analysis, we fitted three general linear models to check the correlation amongst gender, productivity, and salary: 
+Under this model, we predict a positive and statistically significant correlation between seniority level and salary. Given the baseline group as directors, it is reasonable to see any positions below director receives lower salaries and any positions above director receives higher salaries. We also observe positive and significant relationship between the time predictors quarter and year. This suggests some natural increase in salary over time unrelated to other variables. Interestingly, we observe a negative relationship between productivity and salary, which we will examine with closer detail later.
+
+Most importantly, there appears to be a statistically significant difference between average salaries of males and females after controlling for all the necessary information. More specifically, holding all else constant, being female reduces the salary 3428.3 on average. The 95% confidence interval for gender is [-4638.331,-2238.205] which is strongly negative. Prior to this model, we also considered the naive linear regression model that simply regresses gender on salary without controlling for any variables. The effect found was that being women reduces one's salary by 2680.4. We see that this difference is larger now after eliminating many confounding variables. Moreover, we tried running the same final model but removing the gender variable. Then by the lmtest to compare the gender removed model versus the final model, we find a p-value significantly smaller than 0.05, suggesting that the fuller model is necessary. In other words, gender is a significant predictor for salaries. This is again evidence that there is gender bias in the salary levels. 
+
+Building on from the finding that higher productivity leads to lower salaries, we fitted three general linear models to check the correlation amongst gender, productivity, and salary: 
 
 \begin{equation}
 y_{productivity} = X\beta_{gender}  + \epsilon 
@@ -158,7 +173,9 @@ y_{salary} = X\beta_{gender}  + \epsilon
 y_{salary} = X\beta_{productivity}  + \epsilon 
 \end{equation}
 
-According to eqn1.2, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). eqn1.4 indicates a negative correlation between productivity score and salary level, or one unit increase in productivity leads to a decrease of 44.73 in salary. This is an interesting finding because it suggests that women tend to have higher productivity on average, which leads to lower salaries. This could be a potential sign of gender bias or compensation not in line with individual contribution. However, by analzying the full model which takes multiple other variables into account, we realize that productivity is not a useful predictor for salary and hence this relationship between gender, productivity and salary is no longer valid considering other variables. Hence, there is no bias in which females work harder but get paid less. 
+According to eqn1.2, the average productivity of female employees is 1.46 units higher as compared to male employees, holding all other variables constant(p-value = 0.0001). eqn1.4 indicates a negative correlation between productivity score and salary level, or one unit increase in productivity leads to a decrease of 44.73 in salary. This is an interesting finding because it suggests that women tend to have higher productivity on average, which then leads to lower salaries. This is another sign of a potential gender bias in the company, suggesting that compensation is not in line with individual value or contribution. Since both gender and productivity are significant predictors for salary, this bias holds even with other variables included. 
+
+In conclusion, we find statistically significant evidence to believe that there is gender bias in the current salaries levels within the company. Specifically, women's salary are on average more than 3000 lower than that of men after controlling for many crucial factors including seniority and productivity. This should be brought into attention to the board and decide on appropriate actions if necessary. 
 
 ```{r,include=FALSE}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
@@ -205,12 +222,15 @@ summary(model1.5)
 
 # Likelihood ratio test comparing the two models, small p value indicating the second model is better
 lmtest::lrtest(model1.5, model1.1)
+
+no_gender <- lmer(salary ~ seniority + year + quarter + productivity + (1|employee_id) + (1|team), data = current)
+lmtest::lrtest(no_gender, model1.5)
 ```
 
 
-## Does there exist bias in the hiring process?
+## Does there exist genderbias in the hiring process?
 
-Moving on, we assessed the potential bias in the company's hiring process by using the hiring datasets. The hiring process contains three phases, where at each phase, different variables are examined by the human resourses department to determine the successfull applicants. Therefore we derived three different data sets from the original data provided and formed data of successful applicants at each phase. The response variable of interest is whether the candidate made it to the next phase, which is represented by a binary variable 'final_hired', where 1 suggests hired and 0 suggests rejected. For this reason, we used general linear models with the family of binomials to model the hiring results. The model predicts p in equation where p is the probability of event A that we are interested in, $\beta_0$is the intercept, $x_1...x_K$ are our variables of interest and $\beta_1...\beta_k$ are parameters for each of these variables.
+Moving on, we assessed the potential gender  bias in the company's hiring process by using the hiring datasets. The hiring process contains three phases, where at each phase, different variables are examined by the HR department using an AI system to determine the successfull applicants. Therefore we derived three different data sets from the original data provided and formed data of successful applicants at each phase. The response variables of interest are whether the candidate made it to the next phase at each stage as well as whether the candidate eventually gotemployed. Since the response variable is binary where 1 suggests passed/hired and 0 suggests rejected, we used general linear models with the family of binomials to model the hiring results. The model predicts p in equation where p is the probability of event A (eg.passing phase 1) that we are interested in, $\beta_0$is the intercept, $x_1...x_K$ are our variables of interest and $\beta_1...\beta_k$ are parameters for each of these variables.
 
 \begin{equation}
 log(\frac{p}{1-p})=\beta_0+\beta_1x_1+...+\beta_kx_k 
@@ -233,7 +253,7 @@ work experience & 0.76 & 0.27 & 0.01 \\ \hline
 \end{tabular}
 \end{center}
 
-According to $\alpha=0.05$, only gpa and work experience are significant predictors to predicting whether the candidate passes the first phase, where both variables have a positive relationship with the chance of passing phase 1. For example, holding all else constant, one unit increase in GPA increases the probability of passing phase 1 by 8.08% on average. It is expected that candidates with higher GPA and more work experience are selected because of higher talent. Notice that although the estimate is slighlty negative for gender, it is not a significant predictor in this model.
+According to $\alpha=0.05$, only gpa and work experience are significant predictors to predicting whether the candidate passes the first phase, where both variables have a positive relationship with the chance of passing phase 1. For example, holding all else constant, one unit increase in GPA increases the odds of passing phase 1 by 8.08% on average. It is expected that candidates with higher GPA and more work experience are selected because of higher talent. Notice that although the estimate is slighlty negative for gender, it is not a significant predictor in this model.
 
 ```{r, include = FALSE}
 phase1_new_applicants
@@ -262,7 +282,7 @@ leadership presence & 1.00 & 0.21 & $3.73e^{-5}$ \\ \hline
 \end{tabular}
 \end{center}
 
-According to $\alpha=0.05$, the significant predictors are technical skills, writing skills, speaking skills and leadership presence. We found that significant variables to pass-phase 1 are no longer significant. This is justified as candidates in this phase likely all have strong gpa and work experiences, hence the decision to move on will be based on the new information on skills and leadership. We notice that all three skills have positive and similar effect on the likelihood of passing this phase.For example, holding all else constant, one unit increase in speaking skills increases the probability of passing phase 2 by 2.47% on average. Again, although the estimate for gender is negative, it is not statistically significant. 
+According to $\alpha=0.05$, the significant predictors are technical skills, writing skills, speaking skills and leadership presence. We found that significant variables to pass phase 1 are no longer significant. This is justified as candidates in this phase likely all have strong gpa and work experiences, hence the decision to move on will be based on the new information on skills and leadership. We notice that all three skills have positive and similar effect on the likelihood of passing this phase.For example, holding all else constant, one unit increase in speaking skills increases the odds of passing phase 2 by 2.47% on average. Again, although the estimate for gender is negative, it is not statistically significant. 
 
 ```{r, include=FALSE}
 # pass_phase2 ~ gender* cv gpa cover_letter tech writing speaking (phase2)
@@ -271,7 +291,7 @@ model2.2 <- glm(pass_phase2 ~ gender + team_applied_for + extracurriculars + wor
 summary(model2.2)
 ```
 
-Last but not least, we use the phase 3 data to analyze the final hired candidates. 'Final_hired' is the binary response variable indicating whether the candidate passed this phase or in other words, got hired. We also created the variable 'avg' as the average of the candidate's two interview ratings. Although the data size is limited, we still find that gender is not significant at this phase as well. 
+Last but not least, we use the phase 3 data to analyze the final hired candidates. We again have a binary response variable indicating whether the candidate passed this phase (got hired) or not. We also created the variable 'avg' as the average of the candidate's two interview ratings. Although the data size is limited, we still find that gender is not significant at this phase as well. We also attempted models that predicts if the candidate eventually got hired from phase 1 and phase 2 data, the results again show that gender is not a significant predictor. 
 
 ```{r, include = FALSE}
 # final_hired ~ gender* cv gpa cover_letter tech writing speaking rating1 rating2 (phase3)
@@ -289,36 +309,33 @@ model2.4 <- glm(final_hired ~ gpa, family = binomial(link = "logit"), data = pha
 summary(model2.4)
 ```
 
-To conclude, we find that there is no gender bias during any of the phase of this hiring process. The candidates who pass each phase are the ones with stronger ability and talent, which is the fair decision to make during recruiting. We notice that the company is also not more biased on one skill out of writing, technical or speaking skills than others. This suggests Black Saber is also not having potential bias for candidates whose English may not be their first language and values talent equally.  
+To conclude, we believe that there is no gender bias during any of the phases of this hiring process. The candidates who pass each phase are the ones with stronger ability, which is the fair decision to make during recruiting. We notice that the company is also not more biased on one skill out of writing, technical or speaking skills than others. This suggests Black Saber is also not having potential bias for candidates whose English may not be their first language and values talent equally. Thus, Black Saber can continue to trust the AI system in the hiring process to continue bringing the best talent to the company.  
 
 ## Is there gender bias in the promotion process?
 
-In order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees. We counted the number of times each employee got promoted and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because these are only 11 out of 608 employees. We calculated the length of service of each employee in years and individual average productivity score over years. 
+For the third research question, in order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees. We counted the number of times each employee got promoted and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because these are only 11 out of 608 employees. We calculated the length of service of each employee in years and individual average productivity score over years. This is because it takes time to get promoted and hence employees should be compared adjusting for their years at the company. Similarly, individuals with higher productivity may be more likely to be promoted regardless of gender, and hence should also be controlled. Figure 1 below indicates the number of times being promoted across male and female employees. We observed that the median of promotion times for male is higher than the median for females: 1 for male and 0 for female. The employee being promoted the most is a male who got promoted 7 times. 
 
-Figure 1 below indicates the number of times being promoted across male and female employees. We observed that the median of promotion times for male is higher than the median for females: 1 for male and 0 for female. The employee being promoted the most is a male who got promoted 7 times. We considered three models: 
+To model the promotion process, we considered two models: 
 
 \begin{equation}
   y_{promotion} = X\beta_{gender}  + X\beta_{avg\_productivity} +  X\beta_{service\_length} + \epsilon 
 \end{equation}
 
 \begin{equation}
-y_{salary} = X\beta_{gender}  + X\beta_{service\_length} + \epsilon 
+y_{salary} = X\beta_{gender} + \epsilon , offset = log{service\_length}
 \end{equation}
 
-\begin{equation}
-y_{salary} = X\beta_{service\_length}  + \epsilon 
-\end{equation}
-
-Model 7 indicates that the average profuctivity score does not have a siginifiant effect on the number of promotions(p=0.059). It shows that gender(p=$1.67e^{-5}$) and service length(p<$2e^{16}$) affects the number of promotions significantly. We further examined model 8 and 9 and compared them using a ratio test, the results suggests us dropping gender as a significant variable(p=$2.457e^{-5}$). 
 
 ```{r gender-promotion, fig.cap="The Number of Promotion By Gender", fig.height=2, fig.width=2.5}
 promotion %>% ggplot(aes(x = gender, y = num_promotion)) + geom_boxplot()+ylab("number of promotions")+
   theme_light()
 ```
 
-We calculated the average productivity level for each employee and considered it as a variable affecting promotion. However, when regressing both gender and average productivity together on the number of promotions, we find that the average productivity is not a significant predictor and has no influence over the estimate for gender. According to 9, employees on average once every two years. However, as shown in figure(x), the number of promotions is not only related to the service length, which makes sense because there is a threshold to this positive relationship. That means, it is almost certain that under senior III, employees gets promoted every two year, however after that, promotion is likely dependent on other considerations which are hard to measure.  
+According to the figure below, employees on average get promoted once every two years. It is also clear that the employees with more promotions are mostly men. Our first model regressed gender, service length, and average productivity together on the number of promotions. We found that the average productivity is not a significant predictor (p=0.059) and while the other two are significant (both below 0.05). To be more accurate, we used an offset term to offset the log of service years so that the count of promotions are all measured in same rates. The output from our second model suggests that the rate of promotions of women are on average 0.7 times that of men, revealing gender bias in the promotion system. This significant difference exists after taking other variables into consideration, such as team and leadership. We have also performed lmtest on a reduced model that drops the gender variable. With an extremely small p-value, we find that it is necessary to include this variable. In other words, gender is a significant indicator for promotions. 
 
-```{r promotion-times, fig.cap="Number of promotios against service length", fig.height=4, out.height="65%", out.width="65%", fig.align='center'}
+In conclusion, by creating a new dataset that focuses on the promotion information, we find that gender makes a significant difference in determining the number of promotions the employee gets after controlling for multiple factors. Specifically, the rate of promotions women get are only 0.7 of that of men, indicating gender bias in the promotion process. 
+
+```{r promotion-times, fig.cap="Number of promotions against service length", fig.height=4, out.height="65%", out.width="65%", fig.align='center'}
 promotion %>% ggplot(aes(x=service_length, y= num_promotion, col=gender))+
   geom_point()+xlab("service length")+ylab("number of promotions")+
   theme_light()
@@ -326,13 +343,13 @@ promotion %>% ggplot(aes(x=service_length, y= num_promotion, col=gender))+
 
 
 ```{r, include=FALSE}
-model3.1 <- glm(num_promotion ~ avg_productivity + gender + service_length, data = promotion)
+model3.1 <- glm(num_promotion ~ avg_productivity + gender + service_length, family=poisson, data = promotion)
 kable(tidy(model3.1))
 summary(model3.1)
 ```
 
 ```{r, include=FALSE}
-model3.2 <- glm(num_promotion ~ gender + service_length, data = promotion)
+model3.2 <- glm(num_promotion ~ gender, offset=log(service_length),family=poisson, data = promotion)
 kable(tidy(model3.2))
 summary(model3.2)
 ```
@@ -416,8 +433,7 @@ technical
 ```
 
 ## Discussion
-
-To summarize, even though there exists differences between the average salaries of male and female employees, there exists multiple factors that affect the salary level such as productivity score, and the average salary increases as the seniority of role increases as it should. Gender is found to be a confounder of productivity, where productivity has a negative relationship with salary. Among the three phases of recruitments, the chance of successfully landing the job is mostly dependent on other variables such as gpa and work experience. Gender is not found as a significant predicting variable for the chance of success during any of these phases. In other words, candidates with stronger background, talent and potential are selected, regardless of gender. There is a positive relationship between the number of times being promoted and the length of service, and ratio test between models shows that gender tend to induce over-parametrization for the number of times being promoted. Overall, the process of hiring, enumeration and promotion depends on non-personal factors of an employee such as talent and contribution to the firm, and therefore is not gender-biased.  
+To summarize, although we expect multiple variables including role seniority, productivity and team to confound the relationship between gender and salary, we in the end found a more negative relationship between the two, showing strong evidence of a gender bias in the salary levels. Amonge all three phases of recruitments, the AI system accurately selects the best talent by mostly depending on ability-related skills and not gender. There exists a positive relationshi between the number of times promoted and the length of service at the company, after controlling for these factors, we still observed females to receive lower promotion rates than male. Overall, there is bias in the salary and promotion processes but not in the hiring process. 
 
 ### Strengths and limitations
 
@@ -438,9 +454,9 @@ For future analysis, we would also be interested in analyzing potential racial b
 
 **Rain Wu**. As the team leader, Rain is currently a senior consultant with Data OverFlow. She joined the company 6 years ago and specializes in data visualization. Rain earned her degree in Bachelor of Science, Specialist in Statistics Methods and Practice, from the University of Toronto in 2012. Before joining DataOverFlow, Rain has 3 year of working experience as a data engineer at Aviva in Markham, Toronto. 
 
-**Tina Wang**. Tina is currently a junior consultant with Data OverFlow who joined us 1 year ago. She specializes in reproducible analysis. Tina earned her degree in Bachelor of Science, Majoring in Computer Science and Statistics from the University of Toronto in 2018. Tina then pursued a Masters degree in Financial Insurance from the University of Toronto in 2020.
+**Tina Wang**. Tina is a junior consultant with Data OverFlow who joined us 1 year ago. She specializes in reproducible analysis. Tina earned her degree in Bachelor of Science, Majoring in Computer Science and Statistics from the University of Toronto in 2018. Tina then pursued a Masters degree in Financial Insurance from the University of Toronto in 2020.
 
-**Yiqu Ding**. Yiqu is a junior consultant with Data OverFlow who also joined us 1 year go. She specializes in statistical communication. Yiqu earned her degree in Bachelor of Science, specializing in mathmatical application in finance and economics with a major in statistics from the University of Toronto in 2017. Yiqu has pursued a Masters degree in Financial Engineering at the University of Waterloo, during the time which she also gained research experience in machine learning algorithmns. 
+**Yiqu Ding**. Yiqu is a junior consultant with Data OverFlow who also joined us 1 year ago. She specializes in statistical communication. Yiqu earned her degree in Bachelor of Science, specializing in mathmatical application in finance and economics with a major in statistics from the University of Toronto in 2017. Yiqu has pursued a Masters degree in Financial Engineering at the University of Waterloo, during the time which she also gained research experience in machine learning algorithmns. 
 
 ## Code of ethical conduct
 
