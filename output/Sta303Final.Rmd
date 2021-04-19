@@ -15,9 +15,10 @@ output:
     toc: yes
     toc_depth: '2'
 subtitle: "-for Blacksaber Software in 2021"
+thanks: "Codes are available at: https://github.com/dding33/Data-Overflow-Operation by request."
 lang: en
 titlepage: yes
-titlepage-color: 027FFF
+titlepage-color: 60A4FF
 titlepage-rule-color: FFFFFF
 titlepage-rule-height: 2
 titlepage-text-color: FFFFFF
@@ -32,7 +33,6 @@ library(ggpubr)
 library(knitr)
 library(tableone)
 library(broom)
-library(psycho)
 library(gtsummary)
 
 #install.packages("gtsummary")
@@ -55,9 +55,7 @@ phase3_new_applicants <- read_csv("clean/phase3_new.csv")
 \newpage
 # Executive summary
 
-First, we would like to thank your company (Black Saber Software) for providing another opportunity to us (Data Over Flow Co. Ltd.). It has always been a pleasure working with your company. 
-
-As requested from your side, we have formed a team of three experienced analysts to work on this project. Specifically, the team examined the structure of the human resource system of your company by analyzing the provided data on the hiring, promotion and salary information. Our examination yielded the final conclusion that that the hiring and remuneration processes are fair and based on talent and value to the company. 
+We examined the structure of the human resource system of your company by analyzing the provided data on the hiring, promotion and salary information. Our examination yielded the final conclusion that that the hiring and remuneration processes are fair and based on talent and value to the company. 
 
 The key findings are:
 
@@ -65,67 +63,40 @@ The key findings are:
 
 - Among the three phases of recruitments, the chance of successfully landing the job is mostly dependent on other variables such as gpa and work experience. Gender is not found as a significant predicting variable for the chance of success during any of these phases. In other words, candidates with stronger background, talent and potential are selected, regardless of gender. 
 
-- The chances of being promoted is higher for male employees than for female employees, however (...)
-
+- There is a positive relationship between the number of times being promoted and the length of service.  
 
 As shown by the table below, the median salary for men is 42,400, which exceeds the median salary for women which is 40,000. However, we observe that while men and women have a similar percentage of appropriate leadership for level, 6.6% of men exceed expection and 0% needs improvement. On the other hand, 0% of women exceeds expectation and 5.2% needs improvement. Hence, men on average have greater contribution and are likely compensated higher for appropriate reasons.
 
-```{r}
-black_saber_current_employees%>%
+```{r, fig.cap="Leadership by gender"}
+tb1 <- current%>%
   select(salary,leadership_for_level,gender)%>%
   tbl_summary(by=gender)%>%
   modify_header(label ~ "**Variable**")
+
+tb1 %>% modify_caption("**Leadership by gender**")
 ```
 
 Moreover, the difference of salary by gender can also be explained by varying role seniority. On average, there are more men with higher positions than womeN. Since it is expected that higher positions receive hiher salaries, this reasonability brings up the average male salary as compared to female. 
 
-```{r}
-black_saber_current_employees%>%
-  select(salary,role_seniority,gender)%>%
-  tbl_summary(by=gender)%>%
-  modify_header(label ~ "**Variable**")
-```
+Salary for men is consistently higher than female no matter the financial quarter. Both the median and interquantile range appears to be shifted higher for men. Moreover, we notice that there is no significant increase of salary in Q4 where potentially bonuses are given. 
 
-As depicted by the figure below, salary for men is consistently higher than female no matter the financial quarter. Both the median and interquantile range appears to be shifted higher for men. Moreover, we notice that there is no significant increase of salary in Q4 where potentially bonuses are given. 
-
-```{r gender-salary, fig.cap="Salary Distribution for Men and Women in Each Quarter", fig.align='center', fig.height=7, fig.width=5}
-#edit axis label (name)
-salary_by_gender_q1 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q2 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q3 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q4 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-gender_salary <- plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
-gender_salary
-```
-
-Moving on to the hiring process, we find that the male and female candidates had similar levels of GPA coming in. However, the candidates who got hired have a much higher gpa than those who did not，which is reasonable and unrelated to gender. The same analysis is found for writing, speaking, and technical skills, where the plot for technical skills is shown as representation.
+Moving on to the hiring process, we find that the male and female candidates had similar levels of GPA coming in. However, the candidates who got hired have a much higher gpa than those who did not, which is reasonable and unrelated to gender. The same analysis is found for writing, speaking, and technical skills, where the plot for technical skills is shown as representation.
 
 ```{r}
-phase1_new_applicants%>%
+tb2 <- phase1_new_applicants%>%
   select(gpa,gender)%>%
   tbl_summary(by=gender)%>%
   modify_header(label ~ "**Variable**")
+tb2 %>% modify_caption("Gpa and gender distribution")
 ```
 
 ```{r}
-phase2_new_applicants%>%
+tb3 <- phase2_new_applicants%>%
   select(technical_skills,writing_skills,speaking_skills,gender)%>%
   tbl_summary(by=gender)%>%
   modify_header(label ~ "**Variable**")
+tb3 %>% modify_caption("Skills score and gender")
 ```
-
-```{r, fig.cap="GPA Distribtion Across Hiring Results", fig.align='center', fig.height=5, fig.width=5}
-gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()+
-  xlab("hiring results")
-gpa_if_hired
-
-tech_if_hired <- phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()+
-  xlab("hiring results")
-tech_if_hired
-```
-
-NEED DISCUSSION FOR Q3-PROMO
-
 
 Based on our findings, we believe that the company is fair in terms of salary distributions for male and female employees. The hiring process empowered by the AI system is also recruiting the best talent without biasing on any gender. The promotion process is also determined by personal ability and contribution to the company. Any individual salary, promotion or hiring decision is made fairly based on non-gender and ability-related parameters only. Overall, Black Saber Software acts in accordance with the Ontario's Human Rights Code and Black Saber's policies.
 
@@ -160,38 +131,34 @@ Given that our full model uses all factors, we tried to reduce the number of pre
 
 \begin{center}
 \captionof{table}{Statistics Summary for Reduced Salary Model}
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{|l|l|l|}
 \hline
-Variable & $\hat{\beta}$ & Std. Error & p-value \\ \hline
-intercept & 116904.03 & 709.18 & 0.99 \\ \hline
-women & -2928.38 & 426.88 & $6.06e^{-9}$ \\ \hline
-junior & -79703.19 & 342.56 & $8.91e^{-7}$ \\ \hline
-manager & -50342.84 & 311.51 & $0.00$ \\ \hline
-senior & -69910.72 & 323.8 & $0.01$ \\ \hline
-vice-president & 30024.17 & 498.25 & $1.25e^{-12}$ \\ \hline
-quarter & 74.31 & 28.28 & $0.01$ \\ \hline
+Variable & $\hat{\beta}$ & Std. Error \\ \hline
+intercept & 116904.03 & 709.18 \\ \hline
+women & -2928.38 & 426.88 \\ \hline
+junior & -79703.19 & 342.56 \\ \hline
+manager & -50342.84 & 311.51\\ \hline
+senior & -69910.72 & 323.8 \\ \hline
+vice-president & 30024.17 & 498.25\\ \hline
+quarter & 74.31 & 28.28 \\ \hline
 \end{tabular}
 \end{center}
 
 Under this model, we predict a positive and statistically significant correlation between seniority level and salary. Given the baseline group as directors, it is reasonable to see any positions below director receives lower salaries and any positions above director receives higher salaries. There appears to be a difference between average salaries of males and females. More specifically holding all else constant, being female reduces the salary by 2953.78 on average. Prior to this model, we also considered the naive model that simply regresses gender on salary without controlling for any variables. The effect found was that being women reduces one's salary by 2680.4. We see that this difference is larger now after eliminating many confounding variables. For further analysis, we fitted three general linear models to check the correlation amongst gender, productivity, and salary: 
 
 \begin{equation}
-\label{eqn:m1.2}
 y_{productivity} = X\beta_{gender}  + \epsilon 
 \end{equation}
 
 \begin{equation}
-\label{eqn:m1.3}
 y_{salary} = X\beta_{gender}  + \epsilon 
 \end{equation}
 
 \begin{equation}
-\label{eqn:m1.4}
 y_{salary} = X\beta_{productivity}  + \epsilon 
 \end{equation}
 
-According to \ref{eqn:m1.2}, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). \ref{eqn:m1.4} indicates a negative correlation between productivity score and salary level, or one unit increase in productivity leads to a decrease of 44.73 in salary. This is an interesting finding because it suggests that women tend to have higher productivity on average, which leads to lower salaries. This could be a potential sign of gender bias or compensation not in line with individual contribution. However, by analzying the full model which takes multiple other variables into account, we realize that productivity is not a useful predictor for salary and hence this relationship between gender, productivity and salary is no longer valid considering other variables. Hence, there is no bias in which females work harder but get paid less. 
-
+According to eqn1.2, the average productivity of female employees is 1.46 times higher of male employees holding all other variables constant(p-value = 0.0001). eqn1.4 indicates a negative correlation between productivity score and salary level, or one unit increase in productivity leads to a decrease of 44.73 in salary. This is an interesting finding because it suggests that women tend to have higher productivity on average, which leads to lower salaries. This could be a potential sign of gender bias or compensation not in line with individual contribution. However, by analzying the full model which takes multiple other variables into account, we realize that productivity is not a useful predictor for salary and hence this relationship between gender, productivity and salary is no longer valid considering other variables. Hence, there is no bias in which females work harder but get paid less. 
 
 ```{r,include=FALSE}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
@@ -227,7 +194,7 @@ kable(tidy(model1.4))
 summary(model1.4)
 ```
 
-```{r}
+```{r, include=FALSE}
 # The reduced model from the main model - this can be the final model I think
 # Tried seniority, gender, quarter, employeeid, year, team, productivity for level from the predictors and the reduced model has a worse performance comparing to the full model
 # Tried removing leadership_for_level  - the reduced model had a better performance comparing to the original, therefore, it is not necessary to include this predictor into the model
@@ -243,13 +210,13 @@ lmtest::lrtest(model1.5, model1.1)
 
 ## Does there exist bias in the hiring process?
 
-Moving on, we assessed the potential bias in the company's hiring process by using the hiring datasets. The hiring process contains three phases, where at each phase, different variables are examined by the human resourses department to determine the successfull applicants. Therefore we derived three different data sets from the original data provided and formed data of successful applicants at each phase. The response variable of interest is whether the candidate made it to the next phase, which is represented by a binary variable 'final_hired', where 1 suggests hired and 0 suggests rejected. For this reason, we used general linear models with the family of binomials to model the hiring results. The model predicts p in \ref{#eq:logistic} where p is the probability of event A that we are interested in, $\beta_0$is the intercept, $x_1...x_K$ are our variables of interest and $\beta_1...\beta_k$ are parameters for each of these variables.
+Moving on, we assessed the potential bias in the company's hiring process by using the hiring datasets. The hiring process contains three phases, where at each phase, different variables are examined by the human resourses department to determine the successfull applicants. Therefore we derived three different data sets from the original data provided and formed data of successful applicants at each phase. The response variable of interest is whether the candidate made it to the next phase, which is represented by a binary variable 'final_hired', where 1 suggests hired and 0 suggests rejected. For this reason, we used general linear models with the family of binomials to model the hiring results. The model predicts p in equation where p is the probability of event A that we are interested in, $\beta_0$is the intercept, $x_1...x_K$ are our variables of interest and $\beta_1...\beta_k$ are parameters for each of these variables.
 
 \begin{equation}
 log(\frac{p}{1-p})=\beta_0+\beta_1x_1+...+\beta_kx_k 
 \end{equation}
 
-At phase 1, we created a binary response variable 'pass_phase1' to identify whether the candidated passed this phase or not. The predictor variables include gpa, whether the candidate has extracurricular experience, whether the candicate submitted a cover letter and whether the candidate has working experience. The results are summarized:
+At phase 1, we created a binary response variable to identify whether the candidated passed this phase or not. The predictor variables include gpa, whether the candidate has extracurricular experience, whether the candicate submitted a cover letter and whether the candidate has working experience. The results are summarized:
 
 \begin{center}
 \captionof{table}{Statistics Summary for Phase 1 Hiring Model}
@@ -275,7 +242,7 @@ model2.1 <- glm(pass_phase1 ~ gender + gpa + extracurriculars + cv + work_experi
 summary(model2.1)
 ```
 
-At phase 2, we again created a binary response variable 'pass_phase2' to indicate whether the candidate passed phase 2. The predicting variables include the team which candidate applied for, whether the candidate has extracurricular experience, whether the candidate has working experience, and three scores representing writing, speaking and technical skills. The results are summarized:
+At phase 2, we again created a binary response variable to indicate whether the candidate passed phase 2. The predicting variables include the team which candidate applied for, whether the candidate has extracurricular experience, whether the candidate has working experience, and three scores representing writing, speaking and technical skills. The results are summarized:
 
 \begin{center}
 \captionof{table}{Statistics Summary for Phase 2 Hiring Model}
@@ -305,6 +272,7 @@ summary(model2.2)
 ```
 
 Last but not least, we use the phase 3 data to analyze the final hired candidates. 'Final_hired' is the binary response variable indicating whether the candidate passed this phase or in other words, got hired. We also created the variable 'avg' as the average of the candidate's two interview ratings. Although the data size is limited, we still find that gender is not significant at this phase as well. 
+
 ```{r, include = FALSE}
 # final_hired ~ gender* cv gpa cover_letter tech writing speaking rating1 rating2 (phase3)
 # everyone passed phase 1 has cv
@@ -324,233 +292,132 @@ summary(model2.4)
 To conclude, we find that there is no gender bias during any of the phase of this hiring process. The candidates who pass each phase are the ones with stronger ability and talent, which is the fair decision to make during recruiting. We notice that the company is also not more biased on one skill out of writing, technical or speaking skills than others. This suggests Black Saber is also not having potential bias for candidates whose English may not be their first language and values talent equally.  
 
 ## Is there gender bias in the promotion process?
-For the third research question, in order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees. We counted the number of times each employee got promoted and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because that is only 11 out of 608 employees. 
 
-Figure 1 below indicates the number of times being promoted across male and female employees. We observed that the median of promotion times for male is higher than the median for females: 1 for male and 0 for female. The employee being promoted the most is a male who got promoted 7 times. 
+In order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees. We counted the number of times each employee got promoted and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because these are only 11 out of 608 employees. We calculated the length of service of each employee in years and individual average productivity score over years. 
 
-```{r gender-promotion, fig.cap="The Number of Promotion By Gender"}
-promotion %>% ggplot(aes(x = gender, y = promotion)) + geom_boxplot()
+Figure 1 below indicates the number of times being promoted across male and female employees. We observed that the median of promotion times for male is higher than the median for females: 1 for male and 0 for female. The employee being promoted the most is a male who got promoted 7 times. We considered three models: 
+
+\begin{equation}
+  y_{promotion} = X\beta_{gender}  + X\beta_{avg\_productivity} +  X\beta_{service\_length} + \epsilon 
+\end{equation}
+
+\begin{equation}
+y_{salary} = X\beta_{gender}  + X\beta_{service\_length} + \epsilon 
+\end{equation}
+
+\begin{equation}
+y_{salary} = X\beta_{service\_length}  + \epsilon 
+\end{equation}
+
+Model 7 indicates that the average profuctivity score does not have a siginifiant effect on the number of promotions(p=0.059). It shows that gender(p=$1.67e^{-5}$) and service length(p<$2e^{16}$) affects the number of promotions significantly. We further examined model 8 and 9 and compared them using a ratio test, the results suggests us dropping gender as a significant variable(p=$2.457e^{-5}$). 
+
+```{r gender-promotion, fig.cap="The Number of Promotion By Gender", fig.height=2, fig.width=2.5}
+promotion %>% ggplot(aes(x = gender, y = num_promotion)) + geom_boxplot()+ylab("number of promotions")+
+  theme_light()
 ```
-When simply regressing gender on promotion, we observe that being female decreases the number of promotions by -0.42 on average as compared to male. This estimate is significant at the 0.05 alpha level. 
+
+We calculated the average productivity level for each employee and considered it as a variable affecting promotion. However, when regressing both gender and average productivity together on the number of promotions, we find that the average productivity is not a significant predictor and has no influence over the estimate for gender. According to 9, employees on average once every two years. However, as shown in figure(x), the number of promotions is not only related to the service length, which makes sense because there is a threshold to this positive relationship. That means, it is almost certain that under senior III, employees gets promoted every two year, however after that, promotion is likely dependent on other considerations which are hard to measure.  
+
+```{r promotion-times, fig.cap="Number of promotios against service length", fig.height=4, out.height="65%", out.width="65%", fig.align='center'}
+promotion %>% ggplot(aes(x=service_length, y= num_promotion, col=gender))+
+  geom_point()+xlab("service length")+ylab("number of promotions")+
+  theme_light()
+```
+
+
 ```{r, include=FALSE}
-model3.1 <- glm(promotion ~ gender, data = promotion)
+model3.1 <- glm(num_promotion ~ avg_productivity + gender + service_length, data = promotion)
 kable(tidy(model3.1))
 summary(model3.1)
 ```
-We calculated the average productivity level for each employee and considered it as a variable affecting promotion. However, when regressing both gender and average productivity together on the number of promotions, we find that the average productivity is not a significant predictor and has no influence over the estimate for gender. 
+
 ```{r, include=FALSE}
-model3.2 <- glm(promotion ~ gender + avg_productivity, data = promotion)
+model3.2 <- glm(num_promotion ~ gender + service_length, data = promotion)
 kable(tidy(model3.2))
 summary(model3.2)
 ```
 
-
-We then explored the length of employeement of individuals and find that the number of times an employee gets promoted is related to the length of employeement(which is correlated with gender). Therefore 
+```{r, include=FALSE}
+model3.3 <- glm(num_promotion ~ service_length, data = promotion)
+kable(tidy(model3.3))
+summary(model3.3)
+lrtest(model3.2, model3.3)
+```
 
 ## Data Visualization
 
-```{r gender salary, fig.cap="Salary Distribution for Men and Women in Each Quarter", fig.align='center', fig.height=7}
-#edit axis label (name)
-salary_by_gender_q1 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q2 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender)) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q3 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-salary_by_gender_q4 <- current %>% filter(substring(financial_q, nchar(financial_q)) == '1') %>% ggplot(aes(x = gender, y = salary)) + geom_boxplot(aes(colour = gender))+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-gender_salary <- plot_grid(salary_by_gender_q1, salary_by_gender_q2, salary_by_gender_q3, salary_by_gender_q4, labels = c("Q1","Q2","Q3","Q4"), ncol = 2, nrow = 2)
-gender_salary
+```{r, fig.align='center', fig.cap="Most recent salary distribution across teams, by gender", out.height="70%", out.width="70%"}
+current %>% filter(financial_q=="2020 Q4") %>% filter(gender != "Prefer not to say") %>% 
+  ggplot(aes(x=gender, y=salary, col=gender))+
+  geom_boxplot()+
+  facet_wrap(~team, nrow=2)+
+  theme_light()
 ```
 
-```{r fig1, fig.cap="Salary Difference Across Leadership for Level Fixing Productivity", fig.align='center'}
+```{r, fig.align='center', fig.cap="Most recent salary distribution across levels, by gender", out.height="70%",out.width="70%"}
+current %>% filter(financial_q=="2020 Q4") %>% filter(gender != "Prefer not to say") %>% 
+  ggplot(aes(x=gender, y=salary, col=gender))+
+  geom_boxplot()+
+  facet_wrap(~role_seniority, nrow=2)+
+  theme_light()
+```
+
+```{r, fig.cap="Salary Difference Across Leadership for Level Fixing Productivity", fig.align='center', out.height="70%",out.width="70%"}
 ldr_slry <- current %>% 
   filter(financial_q == '2020 Q1') %>% 
   group_by(employee_id) %>% 
   ggplot(aes(x = productivity, y = salary, color = as.factor(leadership_for_level)))+
   geom_point()+
-  labs(color = "Leadership for Level")
+  labs(color = "Leadership for Level")+
+  theme_light()
 ldr_slry
 ```
 
-```{r, message=FALSE, fig.cap="Salary Difference Across Role Seniority", fig.align='center'}
-lvl_slry <- current %>% 
-  filter(financial_q == '2020 Q1') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = productivity, y = salary, color = as.factor(role_seniority)))+
-  geom_point()+
-    labs(color = "Seniority")
-lvl_slry
+```{r, fig.cap="gpa comparison between applicants", fig.align='center', out.height="65%",out.width="65%"}
+phase1_new_applicants %>% 
+  ggplot(aes(x=team_applied_for,y=gpa, col=as.factor(final_hired)))+
+  geom_boxplot()+
+  xlab("team applied for")+
+  labs(color="whether hired")+
+  theme_light()
 ```
 
-```{r, message=FALSE, fig.cap="Salary Difference Across Leadership Levels"}
-pro_slry <- current %>% 
-  filter(financial_q == '2020 Q1') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = productivity, y = salary, color = as.factor(gender)))+
-  geom_point()+
-  labs(color = "gender")
-pro_slry
+```{r, fig.cap="Hiring results compared between level of work experience and technical skills", , fig.align='center', out.height="65%",out.width="65%"}
+technical <- phase2_new_applicants %>% 
+  ggplot(aes(x = as.factor(work_experience), y = technical_skills, col=as.factor(final_hired)))+
+  geom_boxplot()+
+  xlab("level of work experience")+
+  ylab("technical skills")+
+  labs(color ="whether hired")+
+  theme_light()
+technical
 ```
 
-
-```{r, fig.cap="Salary Difference in Gender Across Teams, Fixing Quater and Seniority(Entry Level)"}
-current %>% 
-  filter(financial_q == '2020 Q4') %>% 
-  filter(role_seniority == 'Entry-level') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
-  labs(color = "gender")
-#ggsave("images/leadership_salary_Q1.png", width = 7, height = 4)
+```{r, fig.cap="Hiring results compared between level of work experience and writing skills", , fig.align='center', out.height="65%",out.width="65%"}
+technical <- phase2_new_applicants %>% 
+  ggplot(aes(x = as.factor(work_experience), y = writing_skills, col=as.factor(final_hired)))+
+  geom_boxplot()+
+  xlab("level of work experience")+
+  ylab("writing skills")+
+  labs(color ="whether hired")+
+  theme_light()
+technical
 ```
 
-
-```{r, fig.cap="Salary Difference in Gender Across Teams, Fixing Quater and Seniority(Junior I)"}
-current %>% 
-  filter(financial_q == '2020 Q4') %>% 
-  filter(role_seniority == 'Junior I') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
-  labs(color = "gender")
+```{r, fig.cap="Hiring results compared between level of work experience and speaking skills", , fig.align='center', out.height="65%",out.width="65%"}
+technical <- phase2_new_applicants %>% 
+  ggplot(aes(x = as.factor(work_experience), y = speaking_skills, col=as.factor(final_hired)))+
+  geom_boxplot()+
+  xlab("level of work experience")+
+  ylab("speaking skills")+
+  labs(color ="whether hired")+
+  theme_light()
+technical
 ```
-
-
-```{r, fig.cap="Salary Difference in Gender Across Teams, Fixing Quater and Seniority(Junior II)"}
-current %>% 
-  filter(financial_q == '2020 Q4') %>% 
-  filter(role_seniority == 'Senior I') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
-  labs(color = "gender")
-```
-
-
-```{r, fig.cap="Salary Difference in Gender Across Teams, Fixing Quater and Seniority(Manager)"}
-current %>% 
-  filter(financial_q == '2020 Q4') %>% 
-  filter(role_seniority == 'Manager') %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
-  labs(color = "gender")
-```
-
-```{r, fig.cap="Salary Difference in Gender Across Leadership for Level"}
-current %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = leadership_for_level, y = salary, color = as.factor(gender)))+
-  geom_point()+
-  labs(color = "gender")+
-  xlab("leadership for level")+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
-  labs(color = "gender")
-```
-
-
-```{r, fig.cap="Salary Difference in Gender Across Seniority"}
-current %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = role_seniority, y = salary, color = as.factor(gender)))+
-  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
-  labs(color = "gender")+
-  xlab("seniority")
-```
-
-```{r, fig.cap="Salary Difference in Gender Across Teams"}
-current %>% 
-  group_by(employee_id) %>% 
-  ggplot(aes(x = team, y = salary, color = as.factor(gender)))+
-  geom_point()+ theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))+
-  labs(color = "gender")
-```
-
-```{r, fig.cap="GPA Distribution Across Phase1 Applicants"}
-phase1_new_applicants %>% ggplot(aes(x = as.character(gender), y = gpa)) + geom_boxplot()+
-  xlab("gender")
-#ggsave("images/gpa_hiring.png", gpa_if_hired)
-```
-
-
-```{r, fig.cap="GPA Distribtion Across Hiring Results"}
-gpa_if_hired <- phase1_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = gpa)) + geom_boxplot()+
-  xlab("hiring results")
-gpa_if_hired
-```
-
-```{r, fig.cap="GPA Distribution Across Phase1 Results"}
-# gpa_if_pass_phase1 <- phase1_new_applicants %>% ggplot(aes(x = as.character(pass_phase1), y = gpa)) + geom_boxplot()+
-#   xlab("phase1 results")
-# gpa_if_pass_phase1
-```
-
-```{r, fig.cap="Speaking Skills Score Across Hiring Results"}
-#same scale 
-# phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = speaking_skills)) + geom_boxplot()+
-#   xlab("hiring results")+ylab("speaking skills score")
-```
-
-```{r, fig.cap="Speaking Skills Score Across Phase2 Results"}
-#same scale 
-# phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = speaking_skills)) + geom_boxplot()+
-  # xlab("phase2 results")+ylab("speaking skills score")
-```
-
-```{r, fig.cap="Writing Skills Score Across Hiring Results"}
-# phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = writing_skills)) + geom_boxplot()+
-  # xlab("hiring results")+ylab("writing skills score")
-```
-![](images/writing_hired.png)
-```{r, fig.cap="Writing Skills Score Across Phase2 Results"}
-# phase2_new_applicants %>% ggplot(aes(x = as.character(pass_phase2), y = writing_skills)) + geom_boxplot()+
-  # xlab("phase2 results")+ylab("writing skills score")
-```
-
-
-```{r, fig.cap="Technical Skills Score Across Hiring Results"}
-# phase2_new_applicants %>% ggplot(aes(x = as.character(final_hired), y = technical_skills)) + geom_boxplot()+
-  # xlab("hiring results")+ylab("technical skills score")
-```
-
-
-```{r}
-# phase1_new_applicants %>% 
-  # filter(final_hired == '1') %>% 
-  # group_by(applicant_id) %>% 
-  # ggplot(aes(x = gender, y = gpa))+
-  # geom_point()
-```
-
-
-```{r}
-# phase2_new_applicants %>% 
-  # filter(final_hired == '1') %>% 
-  # group_by(applicant_id) %>% 
-  # ggplot(aes(x = gender, y = technical_skills))+
-  # geom_point()
-```
-
-
-```{r}
-# phase2_new_applicants %>% 
-  # filter(final_hired == '1') %>% 
-  # group_by(applicant_id) %>% 
-  # ggplot(aes(x = gender, y = writing_skills))+
-  # geom_point()
-```
-
-
-```{r}
-# phase2_new_applicants %>% 
-  # filter(final_hired == '1') %>% 
-  # group_by(applicant_id) %>% 
-  # ggplot(aes(x = gender, y = speaking_skills))+
-  # geom_point()
-
-```
-
-
 
 ## Discussion
 
-_In this section you will summarize your findings across all the research questions and discuss the strengths and limitations of your work. It doesn't have to be long, but keep in mind that often people will just skim the intro and the discussion of a document like this, so make sure it is useful as a semi-standalone section (doesn't have to be completely standalone like the executive summary)._
+To summarize, even though there exists differences between the average salaries of male and female employees, there exists multiple factors that affect the salary level such as productivity score, and the average salary increases as the seniority of role increases as it should. Gender is found to be a confounder of productivity, where productivity has a negative relationship with salary. Among the three phases of recruitments, the chance of successfully landing the job is mostly dependent on other variables such as gpa and work experience. Gender is not found as a significant predicting variable for the chance of success during any of these phases. In other words, candidates with stronger background, talent and potential are selected, regardless of gender. There is a positive relationship between the number of times being promoted and the length of service, and ratio test between models shows that gender tend to induce over-parametrization for the number of times being promoted. Overall, the process of hiring, enumeration and promotion depends on non-personal factors of an employee such as talent and contribution to the firm, and therefore is not gender-biased.  
 
 ### Strengths and limitations
 

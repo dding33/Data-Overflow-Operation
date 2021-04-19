@@ -7,7 +7,6 @@
 # Please note that this is confidential data provided by Data Over Flow's clients, analysts must perform analysis in accordance
 # with the code of conduct on information security. 
 
-
 #### Workspace setup ####
 if (!require("remotes")) install.packages("remotes")
 remotes::install_github("AndriSignorell/DescTools")
@@ -52,9 +51,10 @@ promotion <- promotion %>% select(employee_id, gender, promotion) %>% filter(gen
 promotion <- unique(promotion)
 
 # Calculate average productivity score for each employee
-temp_promotion <- current %>% select(employee_id, productivity) %>% group_by(employee_id) %>% summarise_at(vars(productivity),
+temp_promotion <- current %>% group_by(employee_id) %>% summarise_at(vars(productivity),
                                                                                          list(avg_productivity = mean))
 promotion <- inner_join(promotion, temp_promotion, by = "employee_id")
+
 
 # Hiring Data
 
