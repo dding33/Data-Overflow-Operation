@@ -34,6 +34,7 @@ library(knitr)
 library(tableone)
 library(broom)
 library(gtsummary)
+library(pscl)
 
 #install.packages("gtsummary")
 #install.packages("tableone")
@@ -65,7 +66,7 @@ The key findings are:
 
 - With adjustments on the number of years worked at the company, the average rate of promotion for females is lower, at 0.7 of the average rate of promotion for men. 
 
-```{r, fig.cap="Salary by gender",include=FALSE}
+```{r, fig.cap="Salary by gender"}
 tb1 <- current%>%
   select(salary,gender)%>%
   tbl_summary(by=gender)%>%
@@ -315,23 +316,32 @@ To conclude, we believe that there is no gender bias during any of the phases of
 
 For the third research question, in order to examine the potential bias in promotion, we derived a promotion data set from the data on current employees. We counted the number of times each employee got promoted and made inference on this count using gender. We filtered out those who prefer not to disclose their gender in order to improve the accuracy of inference, which is fine because these are only 11 out of 608 employees. We calculated the length of service of each employee in years and individual average productivity score over years. This is because it takes time to get promoted and hence employees should be compared adjusting for their years at the company. Similarly, individuals with higher productivity may be more likely to be promoted regardless of gender, and hence should also be controlled. Figure 1 below indicates the number of times being promoted across male and female employees. We observed that the median of promotion times for male is higher than the median for females: 1 for male and 0 for female. The employee being promoted the most is a male who got promoted 7 times. 
 
-To model the promotion process, we considered two models: 
-
-\begin{equation}
-  y_{promotion} = X\beta_{gender}  + X\beta_{avg\_productivity} +  X\beta_{service\_length} + \epsilon 
-\end{equation}
-
-\begin{equation}
-y_{salary} = X\beta_{gender} + \epsilon , offset = log{service\_length}
-\end{equation}
-
-
 ```{r gender-promotion, fig.cap="The Number of Promotion By Gender", fig.height=2, fig.width=2.5}
 promotion %>% ggplot(aes(x = gender, y = num_promotion)) + geom_boxplot()+ylab("number of promotions")+
   theme_light()
 ```
+To model the promotion process, we considered basic Poisson model: 
+
+\begin{equation}
+  log(lambda_{promotion} = X\beta_{gender}  + X\beta_{avg\_productivity} +  X\beta_{service\_length} + \epsilon 
+\end{equation}
+
+In addition to the base model, we also modelled by offseting the log of service length instead of leaving it as a fixed effect predictor. This way all employees are put on the same scale to analyze their rate of promotion, as a count per unit of time. 
 
 According to the figure below, employees on average get promoted once every two years. It is also clear that the employees with more promotions are mostly men. Our first model regressed gender, service length, and average productivity together on the number of promotions. We found that the average productivity is not a significant predictor (p=0.059) and while the other two are significant (both below 0.05). To be more accurate, we used an offset term to offset the log of service years so that the count of promotions are all measured in same rates. The output from our second model suggests that the rate of promotions of women are on average 0.7 times that of men, revealing gender bias in the promotion system. This significant difference exists after taking other variables into consideration, such as team and leadership. We have also performed lmtest on a reduced model that drops the gender variable. With an extremely small p-value, we find that it is necessary to include this variable. In other words, gender is a significant indicator for promotions. 
+
+To address the potential problem that we see more zeros than expected in this promotion dataset due to the fact that many employees are new employees, we also considered a Zero-Inflated Poisson model (ZIP). We created a new binary variable setting the employee is a new employee if he or she has zero promotions and has been at the company for less than 2 years. The table below shows that 35.3% of the dataset, which is 211 employees fit under this category of new employee. By fitting a Zip model, we found that amongst old employees, the rate of promotion for women is 0.76 that of men, holding all else constant. This is similar to the 0.7 we observed before, indicating that our previous Poisson model is valid. 
+
+```{r,include=FALSE}
+promotion_zip<-promotion%>%
+  mutate(new_employee=num_promotion==0 & service_length <2)
+table<-tally(group_by(promotion_zip,new_employee))%>%
+               mutate(prop=round(n/sum(n),3))
+```
+
+```{r New Employee Table, fig.cap="Proportion of new employees", fig.height=2, fig.width=2.5}
+kable(table)
+```
 
 In conclusion, by creating a new dataset that focuses on the promotion information, we find that gender makes a significant difference in determining the number of promotions the employee gets after controlling for multiple factors. Specifically, the rate of promotions women get are only 0.7 of that of men, indicating gender bias in the promotion process. 
 
@@ -360,6 +370,14 @@ kable(tidy(model3.3))
 summary(model3.3)
 lrtest(model3.2, model3.3)
 ```
+
+```{r, include=FALSE}
+model3.4 <- zeroinfl(num_promotion ~ gender|new_employee, offset=log(service_length),data=promotion_zip)
+#coef(summary(model3.4))
+exp(coef(model3.4))
+```
+
+
 
 ## Data Visualization
 
