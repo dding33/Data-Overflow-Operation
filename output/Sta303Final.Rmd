@@ -234,7 +234,7 @@ lmtest::lrtest(no_gender, model1.5)
 ```
 
 \newpage
-## Does there exist genderbias in the hiring process?
+## Does there exist gender bias in the hiring process?
 
 Moving on, we assessed the potential gender bias in the company's hiring process by using the hiring datasets. The hiring process contains three phases, where at each phase, different variables are examined by the HR department using an AI system to determine the successful applicants. Therefore we derived three different data sets from the original data provided and formed data of successful applicants at each phase. The response variables of interest are whether the candidate made it to the next phase at each stage as well as whether the candidate eventually got employed. Since the response variable is binary where 1 suggests passed/hired and 0 suggests rejected, we used general linear models with the family of binomials to model the hiring results. The model predicts p in the equation where p is the probability of event A (eg. passing phase 1) that we are interested in, $\beta_0$is the intercept, $x_1...x_K$ are our variables of interest and $\beta_1...\beta_k$ are parameters for each of these variables.
 
@@ -423,9 +423,9 @@ For future analysis, we would also be interested in analyzing potential racial b
 
 * We work towards the goal of maximizing our positive impact on the people, the community and the environment. We are committed to meeting our social, environmental, economic, cultural, legal and ethical corporate responsibilities.
 
-## Appendix
+# Appendix
 
-### Data Visualization
+## Data Visualization
 
 * View the plots by deleting "include=FALSE". 
 
