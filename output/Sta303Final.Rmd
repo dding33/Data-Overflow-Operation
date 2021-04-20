@@ -66,13 +66,13 @@ The key findings are:
 
 - With adjustments on the number of years worked at the company, the average rate of promotion for females is lower, at 0.7 of the average rate of promotion for men. 
 
-```{r, fig.cap="Salary by gender and their IQR"}
+```{r, fig.cap="Salary by gender, Median and IQR"}
 tb1 <- current%>%
   select(salary,gender)%>%
   tbl_summary(by=gender)%>%
   modify_header(label ~ "**Variable**")
 
-tb1 %>% modify_caption("**Salary by gender and their IQR**")
+tb1 %>% modify_caption("**Salary by gender, Median and IQR**")
 ```
 
 The overall median salary for men is 42,400, exceeding the median salary for women, which is 40,000. The plots below show that the salary for men is higher than females across all but the HR team, which is consistent across time. However, there exist many factors influencing gender and salary simultaneously, including role seniority and leadership. For example, we found that men are more likely to be in higher seniority positions with higher leadership ratings. Thus, they may be compensated higher based on higher value and contribution to the company, which is not any gender bias. However, later analysis will show that the salary gap exists even after taking all these factors into consideration. 
@@ -87,12 +87,12 @@ current %>% filter(financial_q=="2020 Q4") %>% filter(gender != "Prefer not to s
 
 Moving on to the hiring process, we conducted our analysis by going through each phase and test for gender bias. As shown below, we noticed that the male and female candidates had similar skill levels coming in, but the candidates who got hired have much better skills (higher GPA and skill scores) than the ones who did not. Analysis suggests that the AI system selected candidates with stronger backgrounds and potential, unbiased by gender. 
 
-```{r}
+```{r, fig.cap="Gpa by gender, Median and IQR"}
 tb2 <- phase1_new_applicants%>%
   select(gpa,gender)%>%
   tbl_summary(by=gender)%>%
   modify_header(label ~ "**Variable**")
-tb2 %>% modify_caption("Gpa and gender distribution")
+tb2 %>% modify_caption("Gpa by gender, Median and IQR")
 ```
 
 ```{r,include=FALSE}
@@ -186,7 +186,7 @@ In conclusion, we find statistically significant evidence to believe that there 
 ```{r,include=FALSE}
 # The main model examine the gender bias, along with other potential biases in current employee remuneration
 # Removed "Prefer not to say" from gender since it doesn't provide additional information
-# fixed effect: gender, seniority, quarter, productivity
+# fixed effect: gender, seniority, quarter, year, productivity
 # random effect: team, leadership, employee id
 current <- current %>% filter(gender != "Prefer not to say")
 model1.1 <- lmer(salary ~ gender + seniority + year + quarter + productivity + (1|employee_id) + (1|team) + (1|leadership_for_level), data = current)
@@ -288,7 +288,7 @@ leadership presence & 1.00 & 0.21 & $3.73e^{-5}$ \\ \hline
 \end{tabular}
 \end{center}
 
-According to $\alpha=0.05$, the significant predictors are technical skills, writing skills, speaking skills and leadership presence. We found that significant variables to pass phase 1 are no longer significant. This is justified as candidates in this phase likely all have strong GPA and work experiences, hence the decision to move on will be based on the new information on skills and leadership. We notice that all three skills have positive and similar effects on the likelihood of passing this phase. For example, holding all else constant, one unit increase in speaking skills increases the odds of passing phase 2 by 2.47% on average. Again, although the estimate for gender is negative, it is not statistically significant. 
+According to $\alpha=0.05$, the significant predictors are technical skills, writing skills, speaking skills and leadership presence. We found that significant variables to pass phase 1 are no longer significant. This is justified as candidates in this phase likely all have strong GPA and work experiences, hence the decision to move on will be based on the new information on skills and leadership. We notice that all three skills have positive and similar effects on the likelihood of passing this phase. For example, holding all else constant, one unit increase in speaking skills increases the odds of passing phase 2 by 2.47 times on average. Again, although the estimate for gender is negative, it is not statistically significant. 
 
 ```{r, include=FALSE}
 # pass_phase2 ~ gender* cv gpa cover_letter tech writing speaking (phase2)
@@ -330,16 +330,22 @@ promotion %>% ggplot(aes(x = gender, y = num_promotion)) + geom_boxplot()+ylab("
 To model the promotion process, we considered a basic Poisson model: 
 
 \begin{equation}
-  log(\lambda_{promotion} = X\beta_{gender}  + X\beta_{avg\_productivity} +  X\beta_{service\_length} + \epsilon 
+  log(\lambda_{promotion}) = X\beta_{gender}  + X\beta_{avg\_productivity} +  X\beta_{service\_length} + \epsilon 
 \end{equation}
 
 In addition to the base model, we also modelled by offsetting the log of service length instead of leaving it as a fixed effect predictor. This way all employees are put on the same scale to analyze their rate of promotion, as a count per unit of time. 
 
 According to the figure below, employees on average get promoted once every two years. It is also clear that the employees with more promotions are mostly men. Our first model regressed gender, service length, and average productivity together on the number of promotions. We found that the average productivity is not a significant predictor (p=0.059) and while the other two are significant (both below 0.05). To be more accurate, we used an offset term to offset the log of service years so that the count of promotions are all measured at the same rates. The output from our second model suggests that the rate of promotions of women are on average 0.7 times that of men, revealing gender bias in the promotion system. This significant difference exists after taking other variables into consideration, such as team and leadership. We have also performed linear regression models test on a reduced model that drops the gender variable. With an extremely small p-value, we find that it is necessary to include this variable. In other words, gender is a significant indicator for promotions. 
 
+```{r promotion-times, fig.cap="Number of promotions against service length", fig.height=4, out.height="65%", out.width="65%", fig.align='center'}
+promotion %>% ggplot(aes(x=service_length, y= num_promotion, col=gender))+
+  geom_point()+xlab("service length")+ylab("number of promotions")+
+  theme_light()
+```
 To address the potential problem that we see more zeros than expected in this promotion dataset due to the fact that many employees are new employees, we also considered a Zero-Inflated Poisson model (ZIP). We created a new binary variable setting the employee as a new employee if he or she has zero promotions and has been at the company for less than 2 years. The table below shows that 35.3% of the dataset, which is 211 employees fit under this category of the new employees. By fitting a Zip model, we found that amongst old employees, the rate of promotion for women is 0.76 that of men, holding all else constant. This is similar to the 0.7 we observed before, indicating that our previous Poisson model is valid. 
 
 ```{r,include=FALSE}
+#identify new employees from promotion dataset 
 promotion_zip<-promotion%>%
   mutate(new_employee=num_promotion==0 & service_length <2)
 table<-tally(group_by(promotion_zip,new_employee))%>%
@@ -352,26 +358,23 @@ kable(table,caption="Proportion of new employees")
 
 In conclusion, by creating a new dataset that focuses on the promotion information, we find that gender makes a significant difference in determining the number of promotions the employee gets after controlling for multiple factors. Specifically, the rate of promotions women get is only 0.7 of that of men, indicating gender bias in the promotion process. 
 
-```{r promotion-times, fig.cap="Number of promotions against service length", fig.height=4, out.height="65%", out.width="65%", fig.align='center'}
-promotion %>% ggplot(aes(x=service_length, y= num_promotion, col=gender))+
-  geom_point()+xlab("service length")+ylab("number of promotions")+
-  theme_light()
-```
-
-
 ```{r, include=FALSE}
+#poisson regression using three predictors 
+#productivity not significant
 model3.1 <- glm(num_promotion ~ avg_productivity + gender + service_length, family=poisson, data = promotion)
 kable(tidy(model3.1))
 summary(model3.1)
 ```
 
 ```{r, include=FALSE}
+#using offset for service length
 model3.2 <- glm(num_promotion ~ gender, offset=log(service_length),family=poisson, data = promotion)
 kable(tidy(model3.2))
 summary(model3.2)
 ```
 
 ```{r, include=FALSE}
+#need full model, hence gender is significant 
 model3.3 <- glm(num_promotion ~ service_length, data = promotion)
 kable(tidy(model3.3))
 summary(model3.3)
@@ -379,12 +382,13 @@ lrtest(model3.2, model3.3)
 ```
 
 ```{r, include=FALSE}
+#zip model to take new employees into consideration 
 model3.4 <- zeroinfl(num_promotion ~ gender|new_employee, offset=log(service_length),data=promotion_zip)
 #coef(summary(model3.4))
 exp(coef(model3.4))
 ```
 
-
+\newpage
 ## Discussion
 To summarize, although we expect multiple variables including role seniority, productivity and team to confound the relationship between gender and salary, we, in the end, found a more negative relationship between the two, showing strong evidence of a gender bias in the salary levels. Among all three phases of recruitments, the AI system accurately selects the best talent by mostly depending on ability-related skills and not gender. There exists a positive relationship between the number of times promoted and the length of service at the company, after controlling for these factors, we still observed females receive lower promotion rates than males. Overall, there is bias in the salary and promotion processes but not in the hiring process. 
 
@@ -423,6 +427,7 @@ For future analysis, we would also be interested in analyzing potential racial b
 
 * We work towards the goal of maximizing our positive impact on the people, the community and the environment. We are committed to meeting our social, environmental, economic, cultural, legal and ethical corporate responsibilities.
 
+\newpage
 # Appendix
 
 ## Data Visualization
