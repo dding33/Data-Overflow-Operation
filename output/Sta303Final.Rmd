@@ -56,7 +56,7 @@ phase3_new_applicants <- read_csv("clean/phase3_new.csv")
 \newpage
 # Executive summary
 
-We, Data Overflow Operation, have carefully examined the structure of the human resource system of your company, Black Saber Software, by analyzing the provided data on hiring, promotion and salary information. Our research questions focus on each of these three processes and whether gender bias exists in any of the processes. Our examination yielded the final conclusion that the hiring process is fair and based on talent and value to the company, but the salary and promotion processes reveal potential gender bias. 
+We, Data Overflow Operation, have carefully examined the structure of the human resource system of your company, Black Saber Software, by analyzing the provided data on hiring, promotion and salary information. Our research questions focus on each of these three processes and whether gender bias exists in any of the processes. Our examination yielded the conclusion that the hiring process is fair and based on talent and value to the company, but the salary and promotion processes reveal potential gender bias. 
 
 The key findings are:
 
@@ -129,7 +129,7 @@ The three main research questions of the analysis are as follows:
 * Is there a gender bias in the promotion possibilities within the company? 
 
 \newpage
-## Does there exist gender bias in current employee renumeration?
+## Does there exist gender bias in current employee remuneration?
 
 In order to analyze whether gender bias exists in the current employee remuneration, we fitted a linear mixed model as well as two general linear models on the dataset containing all current employees at the Black Saber Software. The dataset contains 6909 observations of 9 variables, including all 608 current employees of the Black Saber Software. We removed 117 observations where the employee preferred not to disclose their gender since these data do not offer valuable information to our analysis. Each observation records the corresponding information of a specific employee at a specific time (a given quarter in a given year). Based on data visualization outputs, the differences between different levels of juniors and seniors are not significant, thus we combined the positions 'Entry-level', 'Junior I', 'Junior II' and 'Junior III' into one category of 'Junior' and combined 'Senior I', 'Senior II', 'Senior III' into another category 'Senior'. 
 
