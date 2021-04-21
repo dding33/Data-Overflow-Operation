@@ -330,7 +330,7 @@ promotion %>% ggplot(aes(x = gender, y = num_promotion)) + geom_boxplot()+ylab("
 To model the promotion process, we considered a basic Poisson model: 
 
 \begin{equation}
-  log(\lambda_{promotion} = X\beta_{gender}  + X\beta_{avg\_productivity} +  X\beta_{service\_length} + \epsilon 
+  log(\mu/A) = X\beta + \epsilon 
 \end{equation}
 
 In addition to the base model, we also modelled by offsetting the log of service length instead of leaving it as a fixed effect predictor. This way all employees are put on the same scale to analyze their rate of promotion, as a count per unit of time. 
